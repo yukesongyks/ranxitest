@@ -3,7 +3,6 @@
 This is a simple Spring Boot application that demonstrates the basic structure and functionality of a Spring Boot project.
 
 ## Project Structure
-
 ```
 my-spring-boot-app
 ├── src
