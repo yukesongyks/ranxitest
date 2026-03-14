@@ -5,18 +5,22 @@ import com.example.myapp.services.ItemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import javax.validation.Valid;
 
 @Controller
 @RequestMapping("/items")
 public class ItemController {
 
+    private final ItemService itemService;
+
     @Autowired
-    private ItemService itemService;
+    public ItemController(ItemService itemService) {
+        this.itemService = itemService;
+    }
 
     @GetMapping
     public String listItems(Model model) {
@@ -31,9 +35,20 @@ public class ItemController {
     }
 
     @PostMapping
-    public String createItem(@ModelAttribute Item item) {
-        itemService.save(item);
-        return "redirect:/items";
+    public String createItem(@Valid @ModelAttribute Item item, 
+                           BindingResult result, 
+                           RedirectAttributes redirectAttributes) {
+        if (result.hasErrors()) {
+            return "items/form";
+        }
+        try {
+            itemService.save(item);
+            redirectAttributes.addFlashAttribute("success", "物品创建成功！");
+            return "redirect:/items";
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/items/new";
+        }
     }
 
     @GetMapping("/{id}/edit")
@@ -44,24 +59,61 @@ public class ItemController {
     }
 
     @PostMapping("/{id}")
-    public String updateItem(@PathVariable Long id, @ModelAttribute Item item) {
-        item.setId(id);
-        itemService.save(item);
-        return "redirect:/items";
+    public String updateItem(@PathVariable Long id, 
+                           @Valid @ModelAttribute Item item, 
+                           BindingResult result,
+                           RedirectAttributes redirectAttributes) {
+        if (result.hasErrors()) {
+            return "items/form";
+        }
+        try {
+            itemService.update(id, item);
+            redirectAttributes.addFlashAttribute("success", "物品更新成功！");
+            return "redirect:/items";
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/items/" + id + "/edit";
+        }
     }
 
     @PostMapping("/{id}/delete")
-    public String deleteItem(@PathVariable Long id) {
-        itemService.deleteById(id);
+    public String deleteItem(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            itemService.deleteById(id);
+            redirectAttributes.addFlashAttribute("success", "物品删除成功！");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
         return "redirect:/items";
+    }
+
+    @GetMapping("/search")
+    public String searchItems(@RequestParam(required = false) String keyword, Model model) {
+        List<Item> items = itemService.searchByKeyword(keyword);
+        model.addAttribute("items", items);
+        model.addAttribute("keyword", keyword);
+        return "items/list";
+    }
+
+    @GetMapping("/category/{category}")
+    public String getItemsByCategory(@PathVariable String category, Model model) {
+        List<Item> items = itemService.findByCategory(category);
+        model.addAttribute("items", items);
+        model.addAttribute("category", category);
+        return "items/list";
     }
 
 
     @GetMapping("/{id}")
-    public String viewItem(@PathVariable Long id, Model model) {
-        Item item = itemService.findById(id)
-                .orElseThrow(() -> new RuntimeException("Item not found with id: " + id));
-        model.addAttribute("item", item);
-        return "items/view";
+    public String viewItem(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            Item item = itemService.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("物品不存在，ID: " + id));
+            model.addAttribute("item", item);
+            return "items/view";
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/items";
+        }
     }
 }
