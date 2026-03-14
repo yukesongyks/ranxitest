@@ -56,6 +56,7 @@ public class ItemController {
         return "redirect:/items";
     }
 
+
     @GetMapping("/{id}")
     public String viewItem(@PathVariable Long id, Model model) {
         Item item = itemService.findById(id)
