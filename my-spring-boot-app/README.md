@@ -4,6 +4,7 @@ This is a simple Spring Boot application that demonstrates the basic structure a
 
 ## Project Structure
 ```
+
 my-spring-boot-app
 ├── src
 │   ├── main
