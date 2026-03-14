@@ -14,9 +14,9 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     
     Optional<Item> findByName(String name);
     
-    List<Item> findByCategory(String category);
-    
-    List<Item> findByQuantityLessThan(Integer quantity);
+    Page<Item> findByCategory(String category, Pageable pageable);
+
+    Page<Item> findByQuantityLessThan(Integer quantity, Pageable pageable);
     
     boolean existsByName(String name);
     

@@ -17,12 +17,17 @@ public class GlobalExceptionHandler {
                                                  HttpServletRequest request) {
         redirectAttributes.addFlashAttribute("error", ex.getMessage());
         String referer = request.getHeader("Referer");
-        return "redirect:" + (referer != null ? referer : "/items");
+        // 验证Referer是否为内部URL，防止开放重定向漏洞
+        if (referer != null && isInternalUrl(referer)) {
+            return "redirect:" + referer;
+        }
+        return "redirect:/items";
     }
 
     @ExceptionHandler(Exception.class)
     public String handleGeneralException(Exception ex, Model model) {
-        model.addAttribute("error", "系统错误: " + ex.getMessage());
+        String errorMessage = ex.getMessage() != null ? ex.getMessage() : "未知错误";
+        model.addAttribute("error", "系统错误: " + errorMessage);
         return "error";
     }
 }

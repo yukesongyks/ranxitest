@@ -88,18 +88,28 @@ public class ItemController {
     }
 
     @GetMapping("/search")
-    public String searchItems(@RequestParam(required = false) String keyword, Model model) {
-        List<Item> items = itemService.searchByKeyword(keyword);
-        model.addAttribute("items", items);
+    public String searchItems(@RequestParam(required = false) String keyword,
+                             @RequestParam(defaultValue = "0") int page,
+                             @RequestParam(defaultValue = "10") int size,
+                             Model model) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Item> items = itemService.searchByKeyword(keyword, pageable);
+        model.addAttribute("items", items.getContent());
         model.addAttribute("keyword", keyword);
+        model.addAttribute("page", items);
         return "items/list";
     }
 
     @GetMapping("/category/{category}")
-    public String getItemsByCategory(@PathVariable String category, Model model) {
-        List<Item> items = itemService.findByCategory(category);
-        model.addAttribute("items", items);
+    public String getItemsByCategory(@PathVariable String category,
+                                    @RequestParam(defaultValue = "0") int page,
+                                    @RequestParam(defaultValue = "10") int size,
+                                    Model model) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Item> items = itemService.findByCategory(category, pageable);
+        model.addAttribute("items", items.getContent());
         model.addAttribute("category", category);
+        model.addAttribute("page", items);
         return "items/list";
     }
 

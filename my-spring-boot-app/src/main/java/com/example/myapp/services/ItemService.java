@@ -33,28 +33,38 @@ public class ItemService {
     }
 
     public Item save(Item item) {
-        if (item.getId() == null && itemRepository.existsByName(item.getName())) {
-            throw new IllegalArgumentException("物品名称 '" + item.getName() + "' 已存在");
+        try {
+            if (item.getId() == null && itemRepository.existsByName(item.getName())) {
+                throw new IllegalArgumentException("物品名称 '" + item.getName() + "' 已存在");
+            }
+            return itemRepository.save(item);
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            throw new IllegalArgumentException("物品名称 '" + item.getName() + "' 已存在", e);
         }
-        return itemRepository.save(item);
     }
 
     public Item update(Long id, Item itemDetails) {
         Item item = itemRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("物品不存在，ID: " + id));
-        
-        if (!item.getName().equals(itemDetails.getName()) && 
-            itemRepository.existsByName(itemDetails.getName())) {
-            throw new IllegalArgumentException("物品名称 '" + itemDetails.getName() + "' 已存在");
+
+        try {
+            if (!item.getName().equals(itemDetails.getName())) {
+                itemRepository.findByNameForUpdate(itemDetails.getName())
+                        .ifPresent(existingItem -> {
+                            throw new IllegalArgumentException("物品名称 '" + itemDetails.getName() + "' 已存在");
+                        });
+            }
+
+            item.setName(itemDetails.getName());
+            item.setDescription(itemDetails.getDescription());
+            item.setCategory(itemDetails.getCategory());
+            item.setQuantity(itemDetails.getQuantity());
+            item.setPrice(itemDetails.getPrice());
+
+            return itemRepository.save(item);
+        } catch (DataIntegrityViolationException e) {
+            throw new IllegalArgumentException("物品名称 '" + itemDetails.getName() + "' 已存在", e);
         }
-        
-        item.setName(itemDetails.getName());
-        item.setDescription(itemDetails.getDescription());
-        item.setCategory(itemDetails.getCategory());
-        item.setQuantity(itemDetails.getQuantity());
-        item.setPrice(itemDetails.getPrice());
-        
-        return itemRepository.save(item);
     }
 
     public void deleteById(Long id) {
