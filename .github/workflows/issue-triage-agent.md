@@ -38,7 +38,6 @@ safe-outputs:
   close-issue:
     max: 1
     required-labels: [duplicate]
-    state-reason: duplicate
 ---
 
 # Issue Triage Agent
