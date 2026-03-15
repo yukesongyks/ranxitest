@@ -37,13 +37,15 @@ Analyze the repository's activity from the last 24 hours (or since the last busi
 
 ### Gather Data
 
-Use GitHub tools to fetch:
+Use GitHub tools to fetch data **scoped to the current repository** (use `repo:{repository}` in all search queries to ensure results are limited to this repository only):
 
-1. **New issues**: Search for issues opened since the start of the reporting period using `is:issue created:>YYYY-MM-DD`.
-2. **Merged PRs**: Search for PRs merged since the start of the reporting period using `is:pr is:merged merged:>YYYY-MM-DD`.
-3. **Open blockers**: Search for open issues/PRs with blocker-related labels (`is:open label:blocker`, `is:open label:priority/p0`, `is:open label:priority/p1`). Also search for open issues mentioning "blocker", "blocking", or "critical" in the title.
+1. **New issues**: Search for issues opened since the start of the reporting period using `repo:{repository} is:issue created:>YYYY-MM-DDTHH:MM:SSZ`.
+2. **Merged PRs**: Search for PRs merged since the start of the reporting period using `repo:{repository} is:pr is:merged merged:>YYYY-MM-DDTHH:MM:SSZ`.
+3. **Open blockers**: Search for open issues/PRs with blocker-related labels (`repo:{repository} is:open label:blocker`, `repo:{repository} is:open label:priority/p0`, `repo:{repository} is:open label:priority/p1`). Also search for open issues mentioning "blocker", "blocking", or "critical" in the title using `repo:{repository} is:open is:issue`.
 
 Limit each list to the 20 most recent items.
+
+**Important**: The `{COUNT}` placeholder in each section header must equal the number of items you actually list in that section — not the `total_count` returned by the search API. If you list 5 items, write `(5)`; if none, write `(0)`.
 
 ### Human Attribution
 
