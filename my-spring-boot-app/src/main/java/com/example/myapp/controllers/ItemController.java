@@ -100,7 +100,6 @@ public class ItemController {
         return "items/list";
     }
 
-
     @GetMapping("/category/{category}")
     public String getItemsByCategory(@PathVariable String category,
                                     @RequestParam(defaultValue = "0") int page,
