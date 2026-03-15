@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${item.id == null ? '新增物品' : '编辑物品'}"></title>
+    <style>
+        :root {
+            --bg: #f6f8fb;
+            --card: #ffffff;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --primary: #0f766e;
+            --border: #e5e7eb;
+            --danger: #dc2626;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: "Helvetica Neue", "PingFang SC", sans-serif;
+            background: linear-gradient(135deg, #f0fdf4, #eff6ff);
+            color: var(--text);
+        }
+
+        .container {
+            max-width: 640px;
+            margin: 40px auto;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+        }
+
+        .nav {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+
+        .nav a { color: var(--muted); text-decoration: none; }
+        .nav a:hover { color: var(--primary); }
+        .nav-sep { color: var(--muted); }
+        .nav-current { color: var(--text); font-weight: 500; }
+
+        h1 {
+            margin: 0 0 24px;
+            font-size: 22px;
+            color: var(--primary);
+        }
+
+        .form-row { margin-bottom: 18px; }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
+            color: var(--muted);
+            font-weight: 500;
+        }
+
+        input, textarea {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        textarea { resize: vertical; min-height: 80px; }
+
+        .field-error {
+            color: var(--danger);
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .actions {
+            margin-top: 24px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            text-decoration: none;
+            font-size: 14px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { opacity: 0.9; }
+        .btn-secondary { background: #e2e8f0; color: #334155; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav">
+        <a th:href="@{/items}">物品管理</a>
+        <span class="nav-sep">/</span>
+        <a th:href="@{/profile}">个人中心</a>
+        <span class="nav-sep">/</span>
+        <a th:href="@{/profile/items}">我的物品</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current" th:text="${item.id == null ? '新增' : '编辑'}"></span>
+    </div>
+
+    <h1 th:text="${item.id == null ? '新增物品' : '编辑物品'}"></h1>
+
+    <form th:object="${item}"
+          th:action="${item.id == null ? '/profile/items' : '/profile/items/' + item.id}"
+          method="post">
+
+        <div class="form-row">
+            <label for="name">名称 <span style="color:var(--danger)">*</span></label>
+            <input id="name" type="text" th:field="*{name}" placeholder="请输入物品名称" required>
+            <div class="field-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+        </div>
+
+        <div class="form-row">
+            <label for="category">分类 <span style="color:var(--danger)">*</span></label>
+            <input id="category" type="text" th:field="*{category}" placeholder="例如：电子设备、办公用品" required>
+            <div class="field-error" th:if="${#fields.hasErrors('category')}" th:errors="*{category}"></div>
+        </div>
+
+        <div class="form-row">
+            <label for="quantity">库存 <span style="color:var(--danger)">*</span></label>
+            <input id="quantity" type="number" min="0" th:field="*{quantity}" required>
+            <div class="field-error" th:if="${#fields.hasErrors('quantity')}" th:errors="*{quantity}"></div>
+        </div>
+
+        <div class="form-row">
+            <label for="price">价格 <span style="color:var(--danger)">*</span></label>
+            <input id="price" type="number" min="0" step="0.01" th:field="*{price}" required>
+            <div class="field-error" th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></div>
+        </div>
+
+        <div class="form-row">
+            <label for="description">描述</label>
+            <textarea id="description" th:field="*{description}" placeholder="物品描述（选填）"></textarea>
+            <div class="field-error" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-primary" type="submit">保存</button>
+            <a class="btn btn-secondary" th:href="@{/profile/items}">取消</a>
+        </div>
+    </form>
+</div>
+</body>
+</html>
