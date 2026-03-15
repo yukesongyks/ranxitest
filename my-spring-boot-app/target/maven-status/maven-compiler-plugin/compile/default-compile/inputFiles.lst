@@ -8,3 +8,4 @@
 /home/runner/work/ranxitest/ranxitest/my-spring-boot-app/src/main/java/com/example/myapp/models/Item.java
 /home/runner/work/ranxitest/ranxitest/my-spring-boot-app/src/main/java/com/example/myapp/repositories/ItemRepository.java
 /home/runner/work/ranxitest/ranxitest/my-spring-boot-app/src/main/java/com/example/myapp/exception/GlobalExceptionHandler.java
+/home/runner/work/ranxitest/ranxitest/my-spring-boot-app/src/main/java/com/example/myapp/controllers/ProfileController.java

@@ -3,6 +3,7 @@ package com.example.myapp.services;
 import com.example.myapp.models.Item;
 import com.example.myapp.repositories.ItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,7 +39,7 @@ public class ItemService {
                 throw new IllegalArgumentException("物品名称 '" + item.getName() + "' 已存在");
             }
             return itemRepository.save(item);
-        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+        } catch (DataIntegrityViolationException e) {
             throw new IllegalArgumentException("物品名称 '" + item.getName() + "' 已存在", e);
         }
     }
@@ -81,8 +82,19 @@ public class ItemService {
         return itemRepository.searchByKeyword(keyword.trim());
     }
 
+    public List<Item> searchByKeywordAndUserId(String keyword, Long userId) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return itemRepository.findByUserId(userId);
+        }
+        return itemRepository.searchByKeywordAndUserId(keyword.trim(), userId);
+    }
+
     public List<Item> findByCategory(String category) {
         return itemRepository.findByCategory(category);
+    }
+
+    public List<Item> findByUserId(Long userId) {
+        return itemRepository.findByUserId(userId);
     }
 
     public List<Item> findLowStockItems(Integer threshold) {

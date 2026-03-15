@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人中心</title>
+    <style>
+        :root {
+            --bg: #f6f8fb;
+            --card: #ffffff;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --primary: #0f766e;
+            --border: #e5e7eb;
+            --danger: #dc2626;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: "Helvetica Neue", "PingFang SC", sans-serif;
+            background: linear-gradient(135deg, #eef7f4, #f7fafc);
+            color: var(--text);
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 40px auto;
+            padding: 0 16px;
+        }
+
+        .nav {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .nav a {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .nav a:hover { color: var(--primary); }
+
+        .nav-sep { color: var(--muted); font-size: 14px; }
+
+        .nav-current { font-size: 14px; color: var(--text); font-weight: 500; }
+
+        .page-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 24px;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .alert-success { background: #d1fae5; color: #065f46; }
+        .alert-error   { background: #fee2e2; color: var(--danger); }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        @media (max-width: 680px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+
+        /* 个人信息卡片 */
+        .profile-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+        }
+
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 700;
+            margin: 0 auto 16px;
+        }
+
+        .profile-name {
+            text-align: center;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .profile-email {
+            text-align: center;
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 20px;
+        }
+
+        .profile-info-row {
+            display: flex;
+            gap: 8px;
+            padding: 8px 0;
+            border-top: 1px solid var(--border);
+            font-size: 13px;
+        }
+
+        .profile-info-row .lbl {
+            color: var(--muted);
+            min-width: 56px;
+        }
+
+        .profile-info-row .val {
+            color: var(--text);
+        }
+
+        .edit-btn {
+            display: block;
+            width: 100%;
+            margin-top: 20px;
+            padding: 10px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .edit-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* 物品卡片 */
+        .items-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+        }
+
+        .items-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .items-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .btn {
+            display: inline-block;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 14px;
+            text-decoration: none;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-secondary { background: #e2e8f0; color: #334155; }
+        .btn-danger { background: #fee2e2; color: var(--danger); }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th, td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+        }
+
+        th { background: #f8fafc; font-weight: 600; color: var(--muted); }
+
+        tr:last-child td { border-bottom: none; }
+
+        tr:hover td { background: #f9fcff; }
+
+        .actions { display: flex; gap: 8px; }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 0;
+            color: var(--muted);
+        }
+
+        .empty-state p { margin-bottom: 16px; }
+
+        .item-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .item-link:hover { text-decoration: underline; }
+
+        .view-all {
+            display: block;
+            text-align: center;
+            margin-top: 16px;
+            font-size: 14px;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .view-all:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav">
+        <a th:href="@{/items}">物品管理</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">个人中心</span>
+    </div>
+
+    <div class="page-title">个人中心</div>
+
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+    <div class="grid">
+        <!-- 个人信息 -->
+        <div class="profile-card">
+            <div class="avatar" th:text="${user.username != null ? #strings.substring(user.username, 0, 1) : 'U'}"></div>
+            <div class="profile-name" th:text="${user.username ?: '未设置'}"></div>
+            <div class="profile-email" th:text="${user.email ?: '未设置邮箱'}"></div>
+
+            <div class="profile-info-row" th:if="${user.phone != null and !#strings.isEmpty(user.phone)}">
+                <span class="lbl">手机</span>
+                <span class="val" th:text="${user.phone}"></span>
+            </div>
+
+            <div class="profile-info-row" th:if="${user.bio != null and !#strings.isEmpty(user.bio)}">
+                <span class="lbl">简介</span>
+                <span class="val" th:text="${user.bio}"></span>
+            </div>
+
+            <div class="profile-info-row" th:if="${user.createdAt != null}">
+                <span class="lbl">注册</span>
+                <span class="val" th:text="${#temporals.format(user.createdAt, 'yyyy-MM-dd')}"></span>
+            </div>
+
+            <a th:href="@{/profile/edit}" class="edit-btn">编辑个人信息</a>
+        </div>
+
+        <!-- 我的物品 -->
+        <div class="items-card">
+            <div class="items-header">
+                <span class="items-title">我的物品</span>
+                <a th:href="@{/profile/items/new}" class="btn btn-primary">+ 新增物品</a>
+            </div>
+
+            <div class="empty-state" th:if="${#lists.isEmpty(items)}">
+                <p>暂无物品，快来添加第一件物品吧！</p>
+                <a th:href="@{/profile/items/new}" class="btn btn-primary">+ 新增物品</a>
+            </div>
+
+            <table th:if="${not #lists.isEmpty(items)}">
+                <thead>
+                <tr>
+                    <th>名称</th>
+                    <th>分类</th>
+                    <th>库存</th>
+                    <th>价格</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="item : ${items}">
+                    <td>
+                        <a th:href="@{/items/{id}(id=${item.id})}" class="item-link" th:text="${item.name}"></a>
+                    </td>
+                    <td th:text="${item.category}"></td>
+                    <td th:text="${item.quantity}"></td>
+                    <td th:text="${#numbers.formatDecimal(item.price, 1, 2)}"></td>
+                    <td>
+                        <div class="actions">
+                            <a class="btn btn-secondary" th:href="@{/profile/items/{id}/edit(id=${item.id})}">编辑</a>
+                            <form th:action="@{/profile/items/{id}/delete(id=${item.id})}" method="post" style="display:inline;">
+                                <button type="submit" class="btn btn-danger">删除</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <a th:if="${not #lists.isEmpty(items)}" th:href="@{/profile/items}" class="view-all">查看全部物品 →</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>
