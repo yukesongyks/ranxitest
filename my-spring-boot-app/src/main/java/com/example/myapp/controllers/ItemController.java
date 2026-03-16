@@ -3,6 +3,10 @@ package com.example.myapp.controllers;
 import com.example.myapp.models.Item;
 import com.example.myapp.services.ItemService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -10,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @Controller
 @RequestMapping("/items")
@@ -92,11 +97,9 @@ public class ItemController {
                              @RequestParam(defaultValue = "0") int page,
                              @RequestParam(defaultValue = "10") int size,
                              Model model) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Item> items = itemService.searchByKeyword(keyword, pageable);
-        model.addAttribute("items", items.getContent());
+        List<Item> allItems = itemService.searchByKeyword(keyword);
+        model.addAttribute("items", allItems);
         model.addAttribute("keyword", keyword);
-        model.addAttribute("page", items);
         return "items/list";
     }
 
@@ -105,11 +108,9 @@ public class ItemController {
                                     @RequestParam(defaultValue = "0") int page,
                                     @RequestParam(defaultValue = "10") int size,
                                     Model model) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Item> items = itemService.findByCategory(category, pageable);
-        model.addAttribute("items", items.getContent());
+        List<Item> allItems = itemService.findByCategory(category);
+        model.addAttribute("items", allItems);
         model.addAttribute("category", category);
-        model.addAttribute("page", items);
         return "items/list";
     }
 

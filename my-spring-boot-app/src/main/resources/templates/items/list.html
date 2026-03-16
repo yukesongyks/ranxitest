@@ -196,7 +196,10 @@
             <h1>物品管理系统</h1>
             <div class="desc">支持物品新增、编辑、删除与库存价格管理</div>
         </div>
-        <a class="btn btn-primary" th:href="@{/items/new}">+ 新增物品</a>
+        <div style="display:flex;gap:10px;align-items:center;">
+            <a class="btn btn-secondary" th:href="@{/profile}">个人中心</a>
+            <a class="btn btn-primary" th:href="@{/items/new}">+ 新增物品</a>
+        </div>
     </div>
 
     <div class="search-section">
