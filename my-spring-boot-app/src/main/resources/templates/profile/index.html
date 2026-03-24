@@ -231,6 +231,48 @@
         }
 
         .view-all:hover { text-decoration: underline; }
+
+        /* 统计卡片 */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 680px) {
+            .stats-row { grid-template-columns: 1fr; }
+        }
+
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+            text-align: center;
+        }
+
+        .stat-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .stat-card.warn .stat-value { color: #b45309; }
+        .stat-card.warn { border-color: #fde68a; background: #fffbeb; }
     </style>
 </head>
 <body>
@@ -245,6 +287,25 @@
 
     <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
     <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+    <!-- 统计概览 -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-icon">📦</div>
+            <div class="stat-value" th:text="${itemCount}">0</div>
+            <div class="stat-label">物品总数</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">💰</div>
+            <div class="stat-value" th:text="'¥' + ${#numbers.formatDecimal(totalValue, 1, 2)}">¥0.00</div>
+            <div class="stat-label">库存总价值</div>
+        </div>
+        <div class="stat-card" th:classappend="${lowStockCount > 0} ? 'warn' : ''">
+            <div class="stat-icon" th:text="${lowStockCount > 0} ? '⚠️' : '✅'">✅</div>
+            <div class="stat-value" th:text="${lowStockCount}">0</div>
+            <div class="stat-label">低库存物品（&lt;5件）</div>
+        </div>
+    </div>
 
     <div class="grid">
         <!-- 个人信息 -->

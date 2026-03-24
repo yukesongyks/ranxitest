@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.validation.Valid;
+import java.math.BigDecimal;
 import java.util.List;
 
 @Controller
@@ -33,8 +34,20 @@ public class ProfileController {
     public String showProfile(Model model) {
         User user = userService.getOrCreateDefaultUser();
         List<Item> myItems = itemService.findByUserId(user.getId());
+
+        long itemCount = myItems.size();
+        BigDecimal totalValue = myItems.stream()
+                .map(i -> i.getPrice().multiply(BigDecimal.valueOf(i.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        long lowStockCount = myItems.stream()
+                .filter(i -> i.getQuantity() < 5)
+                .count();
+
         model.addAttribute("user", user);
         model.addAttribute("items", myItems);
+        model.addAttribute("itemCount", itemCount);
+        model.addAttribute("totalValue", totalValue);
+        model.addAttribute("lowStockCount", lowStockCount);
         return "profile/index";
     }
 
