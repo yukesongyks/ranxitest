@@ -49,13 +49,8 @@ public class ReportController {
     public ResponseEntity<ApiResponse<Void>> submitReport(
             @PathVariable Long id,
             @RequestHeader("X-User-Id") Long userId) {
-        try {
-            reportService.submitReport(id, userId);
-            return ResponseEntity.ok(ApiResponse.success(null, "提交成功"));
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error(400, e.getMessage()));
-        }
+        reportService.submitReport(id, userId);
+        return ResponseEntity.ok(ApiResponse.success(null, "提交成功"));
     }
 
     /**
@@ -66,13 +61,8 @@ public class ReportController {
             @PathVariable Long id,
             @RequestBody AuditRequest request,
             @RequestHeader("X-User-Role") String userRole) {
-        try {
-            reportService.auditReport(id, request, userRole);
-            return ResponseEntity.ok(ApiResponse.success(null, "审核成功"));
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error(400, e.getMessage()));
-        }
+        reportService.auditReport(id, request, userRole);
+        return ResponseEntity.ok(ApiResponse.success(null, "审核成功"));
     }
 
     /**
@@ -83,7 +73,14 @@ public class ReportController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String status) {
-        ReportStatus statusEnum = status != null ? ReportStatus.valueOf(status) : null;
+        ReportStatus statusEnum = null;
+        if (status != null) {
+            try {
+                statusEnum = ReportStatus.valueOf(status);
+            } catch (IllegalArgumentException e) {
+                throw new com.example.demo.exception.ReportBusinessException("无效的状态参数: " + status);
+            }
+        }
         PageResponse<ReportResponse> response = reportService.getReports(page, size, statusEnum);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
