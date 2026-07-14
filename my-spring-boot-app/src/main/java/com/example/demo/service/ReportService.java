@@ -5,6 +5,7 @@ import com.example.demo.entity.ReportStatus;
 import com.example.demo.entity.WeeklyReport;
 import com.example.demo.repository.ReportRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -26,6 +27,10 @@ public class ReportService {
 
     @Autowired
     private ReportRepository reportRepository;
+    
+    // B-003: 团队总人数配置项（替代硬编码）
+    @Value("${team.total-members:20}")
+    private long totalMembers;
 
     /**
      * 创建周报草稿
@@ -46,9 +51,14 @@ public class ReportService {
      * 更新周报草稿
      */
     @Transactional
-    public WeeklyReport updateReport(Long id, ReportUpdateRequest request) {
+    public WeeklyReport updateReport(Long id, ReportUpdateRequest request, Long userId) {
         WeeklyReport report = reportRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("周报不存在"));
+        
+        // B-001: 权限校验 - 验证操作者为周报作者
+        if (!report.getAuthorId().equals(userId)) {
+            throw new RuntimeException("无权编辑此周报");
+        }
         
         if (report.getStatus() != ReportStatus.DRAFT && report.getStatus() != ReportStatus.REJECTED) {
             throw new RuntimeException("只有草稿或已打回的周报可以编辑");
@@ -106,7 +116,12 @@ public class ReportService {
      * 审核周报
      */
     @Transactional
-    public void auditReport(Long id, AuditRequest request) {
+    public void auditReport(Long id, AuditRequest request, String userRole) {
+        // B-002: 角色权限校验 - 仅主管可审核
+        if (!"MANAGER".equals(userRole)) {
+            throw new RuntimeException("只有主管可以审核周报");
+        }
+        
         WeeklyReport report = reportRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("周报不存在"));
         
@@ -116,6 +131,8 @@ public class ReportService {
         
         if ("APPROVE".equals(request.getAction())) {
             report.setStatus(ReportStatus.APPROVED);
+            // M-007: 审核通过时清空打回原因
+            report.setRejectReason(null);
         } else if ("REJECT".equals(request.getAction())) {
             report.setStatus(ReportStatus.DRAFT);
             report.setRejectReason(request.getRejectReason());
@@ -184,8 +201,8 @@ public class ReportService {
         long approvedReports = reportRepository.countApprovedReports(weekStart, weekEnd);
         long submittedReports = reportRepository.countSubmittedReports(weekStart, weekEnd, submittedStatuses);
         
-        // 假设团队总人数为20人（实际应从用户表查询）
-        long totalMembers = 20;
+        // B-003: 使用配置项替代硬编码，团队总人数可在application.properties中配置
+        // 默认值20，生产环境应通过配置或用户服务获取实际人数
         
         BigDecimal submitRate = totalMembers > 0 
             ? BigDecimal.valueOf(submittedMembers).divide(BigDecimal.valueOf(totalMembers), 2, RoundingMode.HALF_UP)

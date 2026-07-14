@@ -35,8 +35,9 @@ public class ReportController {
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<ReportResponse>> updateReport(
             @PathVariable Long id,
-            @RequestBody ReportUpdateRequest request) {
-        WeeklyReport report = reportService.updateReport(id, request);
+            @RequestBody ReportUpdateRequest request,
+            @RequestHeader("X-User-Id") Long userId) {
+        WeeklyReport report = reportService.updateReport(id, request, userId);
         ReportResponse response = toResponse(report);
         return ResponseEntity.ok(ApiResponse.success(response, "保存成功"));
     }
@@ -63,9 +64,10 @@ public class ReportController {
     @PutMapping("/{id}/audit")
     public ResponseEntity<ApiResponse<Void>> auditReport(
             @PathVariable Long id,
-            @RequestBody AuditRequest request) {
+            @RequestBody AuditRequest request,
+            @RequestHeader("X-User-Role") String userRole) {
         try {
-            reportService.auditReport(id, request);
+            reportService.auditReport(id, request, userRole);
             return ResponseEntity.ok(ApiResponse.success(null, "审核成功"));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest()
