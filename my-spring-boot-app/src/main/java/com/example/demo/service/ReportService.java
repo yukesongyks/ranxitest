@@ -3,6 +3,7 @@ package com.example.demo.service;
 import com.example.demo.dto.*;
 import com.example.demo.entity.ReportStatus;
 import com.example.demo.entity.WeeklyReport;
+import com.example.demo.exception.ReportBusinessException;
 import com.example.demo.repository.ReportRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +12,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.persistence.LockModeType;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -53,15 +56,15 @@ public class ReportService {
     @Transactional
     public WeeklyReport updateReport(Long id, ReportUpdateRequest request, Long userId) {
         WeeklyReport report = reportRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("周报不存在"));
+                .orElseThrow(() -> new ReportBusinessException("周报不存在"));
         
         // B-001: 权限校验 - 验证操作者为周报作者
         if (!report.getAuthorId().equals(userId)) {
-            throw new RuntimeException("无权编辑此周报");
+            throw new ReportBusinessException("无权编辑此周报");
         }
         
         if (report.getStatus() != ReportStatus.DRAFT && report.getStatus() != ReportStatus.REJECTED) {
-            throw new RuntimeException("只有草稿或已打回的周报可以编辑");
+            throw new ReportBusinessException("只有草稿或已打回的周报可以编辑");
         }
         
         if (request.getThisWeekWork() != null) {
@@ -80,22 +83,22 @@ public class ReportService {
     @Transactional
     public void submitReport(Long id, Long authorId) {
         WeeklyReport report = reportRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("周报不存在"));
+                .orElseThrow(() -> new ReportBusinessException("周报不存在"));
         
         if (!report.getAuthorId().equals(authorId)) {
-            throw new RuntimeException("无权提交此周报");
+            throw new ReportBusinessException("无权提交此周报");
         }
         
         if (report.getStatus() != ReportStatus.DRAFT && report.getStatus() != ReportStatus.REJECTED) {
-            throw new RuntimeException("只有草稿或已打回的周报可以提交");
+            throw new ReportBusinessException("只有草稿或已打回的周报可以提交");
         }
         
         // 校验字数
         if (report.getThisWeekWork() == null || report.getThisWeekWork().length() < 10) {
-            throw new RuntimeException("本周工作内容字数需大于10字");
+            throw new ReportBusinessException("本周工作内容字数需大于10字");
         }
         if (report.getNextWeekPlan() == null || report.getNextWeekPlan().length() < 10) {
-            throw new RuntimeException("下周计划字数需大于10字");
+            throw new ReportBusinessException("下周计划字数需大于10字");
         }
         
         // 防重：检查本周是否已提交过
@@ -104,7 +107,7 @@ public class ReportService {
         List<ReportStatus> submittedStatuses = Arrays.asList(ReportStatus.PENDING, ReportStatus.APPROVED);
         boolean exists = reportRepository.existsByAuthorIdAndWeekAndStatusIn(authorId, weekStart, weekEnd, submittedStatuses);
         if (exists) {
-            throw new RuntimeException("您本周已提交过周报");
+            throw new ReportBusinessException("您本周已提交过周报");
         }
         
         report.setStatus(ReportStatus.PENDING);
@@ -119,14 +122,14 @@ public class ReportService {
     public void auditReport(Long id, AuditRequest request, String userRole) {
         // B-002: 角色权限校验 - 仅主管可审核
         if (!"MANAGER".equals(userRole)) {
-            throw new RuntimeException("只有主管可以审核周报");
+            throw new ReportBusinessException("只有主管可以审核周报");
         }
         
         WeeklyReport report = reportRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("周报不存在"));
+                .orElseThrow(() -> new ReportBusinessException("周报不存在"));
         
         if (report.getStatus() != ReportStatus.PENDING) {
-            throw new RuntimeException("只有待审核的周报可以审核");
+            throw new ReportBusinessException("只有待审核的周报可以审核");
         }
         
         if ("APPROVE".equals(request.getAction())) {
@@ -137,7 +140,7 @@ public class ReportService {
             report.setStatus(ReportStatus.DRAFT);
             report.setRejectReason(request.getRejectReason());
         } else {
-            throw new RuntimeException("无效的审核操作");
+            throw new ReportBusinessException("无效的审核操作");
         }
         
         report.setAuditedAt(LocalDateTime.now());
@@ -183,7 +186,7 @@ public class ReportService {
      */
     public WeeklyReport getReportById(Long id) {
         return reportRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("周报不存在"));
+                .orElseThrow(() -> new ReportBusinessException("周报不存在"));
     }
 
     /**
