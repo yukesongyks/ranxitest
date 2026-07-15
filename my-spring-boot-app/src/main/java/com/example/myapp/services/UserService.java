@@ -3,6 +3,7 @@ package com.example.myapp.services;
 import com.example.myapp.models.User;
 import com.example.myapp.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,10 +15,12 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public User createUser(User user) {
@@ -77,6 +80,7 @@ public class UserService {
                 .orElseGet(() -> {
                     User defaultUser = new User();
                     defaultUser.setUsername("admin");
+                    defaultUser.setPassword(passwordEncoder.encode("admin123"));
                     defaultUser.setEmail("admin@example.com");
                     defaultUser.setBio("这是默认用户，欢迎编辑个人信息！");
                     defaultUser.setLocation("中国");
