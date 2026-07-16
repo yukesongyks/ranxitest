@@ -5,6 +5,11 @@ import java.util.*;
 /**
  * 加权有向图的邻接表表示。
  * 支持添加边、获取邻接节点和边权重。
+ *
+ * <p><b>线程安全说明</b>：此类不是线程安全的。如果在多线程环境中使用，
+ * 需要外部同步。特别地，{@link #getNeighbors(int)} 返回的不可变 Map
+ * 是对内部数据结构的实时视图，若在迭代邻居时并发修改图结构，
+ * 可能抛出 {@link java.util.ConcurrentModificationException}。
  */
 public class Graph {
 

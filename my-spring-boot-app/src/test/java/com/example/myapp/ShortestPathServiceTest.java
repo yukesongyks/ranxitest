@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * ShortestPathService 和 Graph 的单元测试。
  */
-class ShortestPathServiceTest {
+public class ShortestPathServiceTest {
 
     private final ShortestPathService service = new ShortestPathService();
 
@@ -215,5 +215,25 @@ class ShortestPathServiceTest {
     void getNeighborsOutOfBounds() {
         Graph g = new Graph(3);
         assertThrows(IllegalArgumentException.class, () -> g.getNeighbors(5));
+    }
+
+    @Test
+    @DisplayName("computeShortestPaths：null graph 应抛异常")
+    void computeShortestPathsNullGraph() {
+        assertThrows(IllegalArgumentException.class, () -> service.computeShortestPaths(null, 0));
+    }
+
+    @Test
+    @DisplayName("computeShortestPaths：source 为负数应抛异常")
+    void computeShortestPathsSourceNegative() {
+        Graph g = new Graph(3);
+        assertThrows(IllegalArgumentException.class, () -> service.computeShortestPaths(g, -1));
+    }
+
+    @Test
+    @DisplayName("computeShortestPaths：source 越界应抛异常")
+    void computeShortestPathsSourceOutOfBounds() {
+        Graph g = new Graph(3);
+        assertThrows(IllegalArgumentException.class, () -> service.computeShortestPaths(g, 3));
     }
 }

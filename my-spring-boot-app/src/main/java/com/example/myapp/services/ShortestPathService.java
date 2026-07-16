@@ -21,6 +21,12 @@ public class ShortestPathService {
             /** 前驱节点数组，用于重建路径；源节点或不可达节点为 -1 */
             int[] predecessors
     ) {
+        public ShortestPathResult {
+            // 防御性拷贝，防止调用方修改内部数组
+            distances = distances.clone();
+            predecessors = predecessors.clone();
+        }
+
         /**
          * 重建从源节点到目标节点的最短路径。
          *
@@ -48,9 +54,18 @@ public class ShortestPathService {
      * @param graph 图
      * @param source 源节点
      * @return 包含最短距离和前驱节点的结果
+     * @throws IllegalArgumentException 如果 graph 为 null 或 source 越界
      */
     public ShortestPathResult computeShortestPaths(Graph graph, int source) {
+        if (graph == null) {
+            throw new IllegalArgumentException("graph 不能为 null");
+        }
+
         int vertices = graph.getVertices();
+        if (source < 0 || source >= vertices) {
+            throw new IllegalArgumentException(
+                "source 节点越界: " + source + "，有效范围 [0, " + (vertices - 1) + "]");
+        }
 
         // 距离数组，初始化为无穷大
         int[] distances = new int[vertices];
