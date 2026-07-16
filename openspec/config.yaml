@@ -1,0 +1,6 @@
+# OpenSpec project configuration
+project: my-spring-boot-app
+language: java
+framework: spring-boot
+java_version: 17
+package_base: com.example.myapp
