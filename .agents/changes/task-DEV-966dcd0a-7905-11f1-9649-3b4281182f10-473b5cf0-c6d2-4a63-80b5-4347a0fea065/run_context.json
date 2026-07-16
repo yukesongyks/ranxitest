@@ -1,3 +1,6 @@
 {
-  "blocker_count": 1
+  "blocker_count": 3,
+  "review_date": "2026-07-16",
+  "review_stage": "review",
+  "review_summary": "代码评审完成。发现 3 个阻断性问题：BLK-001 (实现文件缺失)、BLK-002 (邻接矩阵无边语义不一致)、BLK-003 (负权边检测缺失)。评审结论：Request Changes。"
 }
