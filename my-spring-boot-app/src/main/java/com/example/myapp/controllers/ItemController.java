@@ -92,6 +92,30 @@ public class ItemController {
         return "redirect:/items";
     }
 
+    @GetMapping("/{id}/copy")
+    public String copyItem(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            Item copy = itemService.copy(id);
+            model.addAttribute("item", copy);
+            redirectAttributes.addFlashAttribute("success", "物品复制成功，请修改后保存");
+            return "items/form";
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/items";
+        }
+    }
+
+    @PostMapping("/{id}/quick-delete")
+    public String quickDeleteItem(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            itemService.deleteById(id);
+            redirectAttributes.addFlashAttribute("success", "物品删除成功！");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/items";
+    }
+
     @GetMapping("/search")
     public String searchItems(@RequestParam(required = false) String keyword,
                              @RequestParam(defaultValue = "0") int page,
