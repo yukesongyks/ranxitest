@@ -130,6 +130,7 @@
 
     <div class="actions">
         <a class="btn btn-primary" th:href="@{/items/{id}/edit(id=${item.id})}">编辑物品</a>
+        <a class="btn btn-secondary" th:href="@{/items/{id}/copy(id=${item.id})}">复制物品</a>
         <a class="btn btn-secondary" th:href="@{/items}">返回列表</a>
         <form th:action="@{/items/{id}/delete(id=${item.id})}" method="post" style="display:inline;">
             <button type="submit" class="btn btn-danger">删除物品</button>

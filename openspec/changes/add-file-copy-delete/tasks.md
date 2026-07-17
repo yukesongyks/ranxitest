@@ -2,7 +2,7 @@
 
 ## 实现区域：Service 层
 
-- [ ] **Task 1**: 在 `ItemService.java` 中新增 `copy(Long id)` 方法
+- [x] **Task 1**: 在 `ItemService.java` 中新增 `copy(Long id)` 方法
   - 通过 `findById(id)` 获取原物品
   - 若不存在则抛出 `IllegalArgumentException("物品不存在，无法复制")`
   - 创建新 Item 实例，复制 name、description、category、price、quantity 字段
@@ -11,13 +11,13 @@
 
 ## 实现区域：Controller 层
 
-- [ ] **Task 2**: 在 `ItemController.java` 中新增 `GET /items/{id}/copy` 端点
+- [x] **Task 2**: 在 `ItemController.java` 中新增 `GET /items/{id}/copy` 端点
   - 调用 `itemService.copy(id)` 获取副本
   - 将副本放入 Model
   - 添加 Flash 属性"物品复制成功，请修改后保存"
   - 返回 `items/form` 编辑页视图
 
-- [ ] **Task 3**: 在 `ItemController.java` 中新增 `POST /items/{id}/quick-delete` 端点
+- [x] **Task 3**: 在 `ItemController.java` 中新增 `POST /items/{id}/quick-delete` 端点
   - 调用 `itemService.deleteById(id)`
   - 成功时添加 Flash 属性"物品删除成功！"
   - 失败时（`IllegalArgumentException`）添加 Flash 错误属性
@@ -25,15 +25,15 @@
 
 ## 实现区域：View 层
 
-- [ ] **Task 4**: 修改 `templates/items/list.html`，在每行物品操作区添加"复制"按钮
+- [x] **Task 4**: 修改 `templates/items/list.html`，在每行物品操作区添加"复制"按钮
   - 链接到 `@{/items/{id}/copy}`（GET 请求）
   - 按钮样式与现有操作按钮一致
 
-- [ ] **Task 5**: 修改 `templates/items/list.html`，在每行物品操作区添加"快捷删除"按钮
+- [x] **Task 5**: 修改 `templates/items/list.html`，在每行物品操作区添加"快捷删除"按钮
   - 使用 POST 表单提交到 `@{/items/{id}/quick-delete}`
   - 按钮样式与现有操作按钮一致
 
-- [ ] **Task 6**: 修改 `templates/items/view.html`（详情页），添加"复制"按钮
+- [x] **Task 6**: 修改 `templates/items/view.html`（详情页），添加"复制"按钮
   - 链接到 `@{/items/{id}/copy}`（GET 请求）
 
 ## 验证

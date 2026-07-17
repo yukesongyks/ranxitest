@@ -75,6 +75,18 @@ public class ItemService {
         itemRepository.deleteById(id);
     }
 
+    public Item copy(Long id) {
+        Item original = itemRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("物品不存在，无法复制"));
+        Item copy = new Item();
+        copy.setName(original.getName());
+        copy.setDescription(original.getDescription());
+        copy.setCategory(original.getCategory());
+        copy.setPrice(original.getPrice());
+        copy.setQuantity(original.getQuantity());
+        return copy;
+    }
+
     public List<Item> searchByKeyword(String keyword) {
         if (keyword == null || keyword.trim().isEmpty()) {
             return findAll();
