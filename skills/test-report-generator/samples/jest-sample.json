@@ -1,0 +1,66 @@
+{
+  "numTotalTests": 5,
+  "numPassedTests": 4,
+  "numFailedTests": 1,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "success": false,
+  "startTime": 1751234567890,
+  "name": "jest",
+  "testResults": [
+    {
+      "name": "src/utils/sort.test.js",
+      "status": "failed",
+      "startTime": 1751234567000,
+      "endTime": 1751234567500,
+      "assertionResults": [
+        {
+          "title": "should sort empty array",
+          "fullName": "should sort empty array",
+          "status": "passed",
+          "durationMs": 2,
+          "failureMessages": []
+        },
+        {
+          "title": "should sort single element",
+          "fullName": "should sort single element",
+          "status": "passed",
+          "durationMs": 1,
+          "failureMessages": []
+        },
+        {
+          "title": "should sort reversed array",
+          "fullName": "should sort reversed array",
+          "status": "passed",
+          "durationMs": 3,
+          "failureMessages": []
+        },
+        {
+          "title": "should handle duplicates",
+          "fullName": "should handle duplicates",
+          "status": "passed",
+          "durationMs": 2,
+          "failureMessages": []
+        },
+        {
+          "title": "should reject non-array input",
+          "fullName": "should reject non-array input",
+          "status": "failed",
+          "durationMs": 5,
+          "failureMessages": [
+            "TypeError: Cannot read property 'length' of undefined\n    at QuickSort.sort (src/utils/sort.js:10:22)\n    at Object.<anonymous> (src/utils/sort.test.js:25:12)\n    TOKEN=sk-abcd1234567890 should_be_redacted"
+          ],
+          "location": { "line": 25, "column": 12 }
+        }
+      ]
+    }
+  ],
+  "coverageMap": {
+    "total": {
+      "lines": { "total": 100, "covered": 85, "pct": 85 },
+      "statements": { "total": 120, "covered": 100, "pct": 83.33 },
+      "functions": { "total": 10, "covered": 9, "pct": 90 },
+      "branches": { "total": 20, "covered": 15, "pct": 75 }
+    }
+  }
+}

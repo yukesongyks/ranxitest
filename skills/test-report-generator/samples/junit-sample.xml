@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="6" failures="2" errors="0" skipped="1">
+  <testsuite name="com.example.myapp.utils.QuickSortTest" tests="6" failures="2" errors="0" skipped="1" time="0.052">
+    <testcase classname="com.example.myapp.utils.QuickSortTest" name="testEmptyArray" time="0.001"/>
+    <testcase classname="com.example.myapp.utils.QuickSortTest" name="testSingleElement" time="0.000"/>
+    <testcase classname="com.example.myapp.utils.QuickSortTest" name="testSortedArray" time="0.002"/>
+    <testcase classname="com.example.myapp.utils.QuickSortTest" name="testReverseArray" time="0.003">
+      <failure message="arrays first differed at element [0]; expected:&lt;1&gt; but was:&lt;2&gt;" type="org.junit.ComparisonFailure">
+org.junit.ComparisonFailure: arrays first differed at element [0]; expected:[1] but was:[2]
+	at com.example.myapp.utils.QuickSortTest.testReverseArray(QuickSortTest.java:45)
+	at java.base/jdk.internal.reflect.DirectConstructorHandleAccessor.newInstance(DirectConstructorHandleAccessor.java:67)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)
+      </failure>
+    </testcase>
+    <testcase classname="com.example.myapp.utils.QuickSortTest" name="testDuplicates" time="0.004">
+      <failure message="expected:&lt;[1, 1, 2]&gt; but was:&lt;[1, 2, 1]&gt;" type="org.junit.ComparisonFailure">
+org.junit.ComparisonFailure: expected:[1, 1, 2] but was:[1, 2, 1]
+	at com.example.myapp.utils.QuickSortTest.testDuplicates(QuickSortTest.java:60)
+      </failure>
+    </testcase>
+    <testcase classname="com.example.myapp.utils.QuickSortTest" name="testRandomArray" time="0.012">
+      <skipped/>
+    </testcase>
+  </testsuite>
+</testsuites>
