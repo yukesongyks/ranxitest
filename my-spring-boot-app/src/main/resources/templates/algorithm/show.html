@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>算法演示</title>
+    <style>
+        :root {
+            --card: #ffffff;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --primary: #0f766e;
+            --danger: #dc2626;
+            --border: #e5e7eb;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: "Helvetica Neue", "PingFang SC", sans-serif;
+            background: linear-gradient(135deg, #eef7f4, #f7fafc);
+            color: var(--text);
+        }
+
+        .container {
+            max-width: 980px;
+            margin: 40px auto;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+        }
+
+        .top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 16px;
+        }
+
+        h1 { margin: 0; font-size: 26px; }
+        .desc { margin-top: 6px; color: var(--muted); font-size: 14px; }
+
+        .btn {
+            display: inline-block;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 14px;
+            text-decoration: none;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .btn-primary { background: var(--primary); color: #ffffff; }
+        .btn-secondary { background: #e2e8f0; color: #334155; }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0;
+        }
+        .tab {
+            padding: 10px 18px;
+            border: none;
+            background: transparent;
+            font-size: 15px;
+            color: var(--muted);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+        }
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            font-weight: 600;
+        }
+
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .input-group label { font-size: 14px; color: var(--muted); min-width: 60px; }
+        input[type="text"], select {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 14px;
+            flex: 1;
+            min-width: 180px;
+        }
+
+        .result-box {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+            min-height: 80px;
+        }
+        .result-box pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-break: break-all;
+            font-family: "SF Mono", "Consolas", monospace;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .result-empty { color: var(--muted); font-size: 14px; }
+
+        .result-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+        .result-table th, .result-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+            font-size: 14px;
+        }
+        .result-table th { background: #f0fdfa; color: var(--primary); }
+
+        .error-msg { color: var(--danger); font-size: 14px; margin-top: 8px; }
+
+        a.back-link {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 14px;
+        }
+        a.back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="top">
+        <div>
+            <h1>算法演示</h1>
+            <div class="desc">HelloWorld · 哈希算法 · 冒泡排序 — 执行结果展示与导出</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;">
+            <button id="exportBtn" class="btn btn-primary">导出当前结果</button>
+            <a class="btn btn-secondary" th:href="@{/items}">返回物品管理</a>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab active" data-tab="helloworld" onclick="switchTab('helloworld')">HelloWorld</button>
+        <button class="tab" data-tab="hash" onclick="switchTab('hash')">哈希算法</button>
+        <button class="tab" data-tab="bubble" onclick="switchTab('bubble')">冒泡排序</button>
+    </div>
+
+    <!-- HelloWorld Tab -->
+    <div id="panel-helloworld" class="tab-panel active">
+        <p class="desc">点击执行，查看 HelloWorld 接口返回的问候文本。</p>
+        <button class="btn btn-primary" onclick="runHelloWorld()">执行 HelloWorld</button>
+        <div class="result-box" id="result-helloworld">
+            <p class="result-empty">点击「执行 HelloWorld」查看结果</p>
+        </div>
+    </div>
+
+    <!-- Hash Tab -->
+    <div id="panel-hash" class="tab-panel">
+        <p class="desc">输入文本，选择哈希算法，计算摘要。</p>
+        <div class="input-group">
+            <label>文本:</label>
+            <input type="text" id="hashText" placeholder="输入待哈希文本" value="abc">
+        </div>
+        <div class="input-group">
+            <label>算法:</label>
+            <select id="hashAlgorithm">
+                <option value="SHA_256">SHA-256</option>
+                <option value="SHA_512">SHA-512</option>
+                <option value="MD5">MD5</option>
+            </select>
+        </div>
+        <button class="btn btn-primary" onclick="runHash()">计算哈希</button>
+        <div class="result-box" id="result-hash">
+            <p class="result-empty">输入文本后点击「计算哈希」</p>
+        </div>
+    </div>
+
+    <!-- Bubble Sort Tab -->
+    <div id="panel-bubble" class="tab-panel">
+        <p class="desc">输入逗号分隔的整数数组，选择排序方向，执行冒泡排序。</p>
+        <div class="input-group">
+            <label>数组:</label>
+            <input type="text" id="bubbleArray" placeholder="如: 5,2,8,1" value="5,2,8,1">
+        </div>
+        <div class="input-group">
+            <label>方向:</label>
+            <select id="bubbleOrder">
+                <option value="ASC">升序 (ASC)</option>
+                <option value="DESC">降序 (DESC)</option>
+            </select>
+        </div>
+        <button class="btn btn-primary" onclick="runBubbleSort()">执行排序</button>
+        <div class="result-box" id="result-bubble">
+            <p class="result-empty">输入数组后点击「执行排序」</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentTab = 'helloworld';
+
+    function switchTab(tab) {
+        currentTab = tab;
+        document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(el => el.classList.remove('active'));
+        document.querySelector('.tab[data-tab="' + tab + '"]').classList.add('active');
+        document.getElementById('panel-' + tab).classList.add('active');
+    }
+
+    function handleError(resp, elId) {
+        if (resp.code !== 0) {
+            document.getElementById(elId).innerHTML =
+                '<p class="error-msg">错误 [' + resp.code + ']: ' + (resp.msg || '未知错误') + '</p>';
+            return true;
+        }
+        return false;
+    }
+
+    function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    async function runHelloWorld() {
+        try {
+            const resp = await fetch('/api/algorithm/helloworld');
+            const data = await resp.json();
+            if (handleError(data, 'result-helloworld')) return;
+            document.getElementById('result-helloworld').innerHTML =
+                '<pre>message: ' + escapeHtml(data.data.message) + '</pre>';
+        } catch (e) {
+            document.getElementById('result-helloworld').innerHTML =
+                '<p class="error-msg">请求失败: ' + escapeHtml(e.message) + '</p>';
+        }
+    }
+
+    async function runHash() {
+        const text = document.getElementById('hashText').value.trim();
+        const algorithm = document.getElementById('hashAlgorithm').value;
+        if (!text) {
+            document.getElementById('result-hash').innerHTML =
+                '<p class="error-msg">请输入待哈希文本</p>';
+            return;
+        }
+        try {
+            const resp = await fetch('/api/algorithm/hash', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: text, algorithm: algorithm })
+            });
+            const data = await resp.json();
+            if (handleError(data, 'result-hash')) return;
+            document.getElementById('result-hash').innerHTML =
+                '<pre>' +
+                'algorithm: ' + escapeHtml(data.data.algorithm) + '\n' +
+                'digest:    ' + escapeHtml(data.data.digest) + '\n' +
+                'length:    ' + data.data.length +
+                '</pre>';
+        } catch (e) {
+            document.getElementById('result-hash').innerHTML =
+                '<p class="error-msg">请求失败: ' + escapeHtml(e.message) + '</p>';
+        }
+    }
+
+    async function runBubbleSort() {
+        const arrayStr = document.getElementById('bubbleArray').value.trim();
+        const order = document.getElementById('bubbleOrder').value;
+        if (!arrayStr) {
+            document.getElementById('result-bubble').innerHTML =
+                '<p class="error-msg">请输入数组</p>';
+            return;
+        }
+        const arr = arrayStr.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+        if (arr.length === 0) {
+            document.getElementById('result-bubble').innerHTML =
+                '<p class="error-msg">数组格式不正确，请输入逗号分隔的整数</p>';
+            return;
+        }
+        try {
+            const resp = await fetch('/api/algorithm/bubble-sort', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ array: arr, order: order })
+            });
+            const data = await resp.json();
+            if (handleError(data, 'result-bubble')) return;
+            const d = data.data;
+            document.getElementById('result-bubble').innerHTML =
+                '<table class="result-table"><tbody>' +
+                '<tr><th>原始数组</th><td>' + d.original.join(', ') + '</td></tr>' +
+                '<tr><th>排序结果</th><td>' + d.sorted.join(', ') + '</td></tr>' +
+                '<tr><th>交换次数</th><td>' + d.swaps + '</td></tr>' +
+                '<tr><th>耗时(ms)</th><td>' + d.costMs + '</td></tr>' +
+                '</tbody></table>';
+        } catch (e) {
+            document.getElementById('result-bubble').innerHTML =
+                '<p class="error-msg">请求失败: ' + escapeHtml(e.message) + '</p>';
+        }
+    }
+
+    document.getElementById('exportBtn').addEventListener('click', function () {
+        let url = '/api/algorithm/export?type=';
+        if (currentTab === 'helloworld') {
+            window.location.href = '/api/algorithm/export?type=HELLOWORLD&format=CSV';
+        } else if (currentTab === 'hash') {
+            const text = encodeURIComponent(document.getElementById('hashText').value);
+            const alg = document.getElementById('hashAlgorithm').value;
+            window.location.href = '/api/algorithm/export?type=HASH&format=CSV&text=' + text + '&algorithm=' + alg;
+        } else if (currentTab === 'bubble') {
+            const arrayStr = document.getElementById('bubbleArray').value;
+            const order = document.getElementById('bubbleOrder').value;
+            window.location.href = '/api/algorithm/export?type=BUBBLE_SORT&format=CSV&array='
+                + encodeURIComponent(arrayStr) + '&order=' + order;
+        }
+    });
+</script>
+</body>
+</html>
