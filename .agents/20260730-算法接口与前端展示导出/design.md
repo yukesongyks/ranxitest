@@ -139,6 +139,8 @@ flowchart LR
 | 通用出参结构 | `{ "code": int, "msg": string, "data": object }`；code=0 成功 |
 | 模块映射 | ALGO → 算法接口；EXPORT → 导出 |
 
+> **实现取舍说明（G10.2）**：`ApiResult.code` 字段在实现中为 `int` 类型（数字序号），语义码 `ALGO_xxx` / `EXPORT_xxx` 内嵌于 `msg` 文本中返回（如 `msg="ALGO_008: 数组元素不能为 null"`）。采用此取代理由：① `ApiResult` 通用返回结构需保持 `code` 为数值（前端按 `code != 0` 判定失败），`BizException` 数字 code 直接透传到 `ApiResult.error(int, String)`，避免破坏已有契约；② 语义码作为可读消息前缀，便于日志检索与人工定位，与数字 code 一一映射。错误码数字与语义码的映射关系见各接口错误码表。
+
 ### 5.1 算法接口模块
 
 #### 5.1.1 表结构设计
@@ -230,6 +232,7 @@ flowchart LR
 | ALGO_005 | array 超长（>MAX_ARRAY_SIZE） |
 | ALGO_006 | 元素越界 |
 | ALGO_007 | order 不支持 |
+| ALGO_008 | 数组元素不能为 null |
 | ALGO_999 | 服务异常 |
 
 #### 5.1.4 子功能详细设计

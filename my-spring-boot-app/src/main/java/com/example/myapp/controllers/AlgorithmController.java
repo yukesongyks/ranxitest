@@ -8,6 +8,8 @@ import com.example.myapp.models.dto.HashRequest;
 import com.example.myapp.models.dto.HashResult;
 import com.example.myapp.models.dto.HelloWorldResult;
 import com.example.myapp.services.AlgorithmService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,6 +26,8 @@ import javax.validation.Valid;
 @RestController
 @RequestMapping("/api/algorithm")
 public class AlgorithmController {
+
+    private static final Logger log = LoggerFactory.getLogger(AlgorithmController.class);
 
     private final AlgorithmService algorithmService;
 
@@ -49,6 +53,7 @@ public class AlgorithmController {
             HashResult result = algorithmService.hash(request.getText(), request.getAlgorithm());
             return ApiResult.success(result);
         } catch (BizException e) {
+            log.warn("哈希接口业务异常 code={} msg={}", e.getCode(), e.getMessage());
             return ApiResult.error(e.getCode(), e.getMessage());
         }
     }
@@ -62,6 +67,7 @@ public class AlgorithmController {
             BubbleSortResult result = algorithmService.bubbleSort(request.getArray(), request.getOrder());
             return ApiResult.success(result);
         } catch (BizException e) {
+            log.warn("冒泡排序接口业务异常 code={} msg={}", e.getCode(), e.getMessage());
             return ApiResult.error(e.getCode(), e.getMessage());
         }
     }

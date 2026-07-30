@@ -4,6 +4,8 @@ import com.example.myapp.exception.BizException;
 import com.example.myapp.models.dto.BubbleSortResult;
 import com.example.myapp.models.dto.HashResult;
 import com.example.myapp.models.dto.HelloWorldResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
@@ -12,6 +14,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HexFormat;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -22,6 +25,8 @@ import java.util.Set;
  */
 @Service
 public class AlgorithmService {
+
+    private static final Logger log = LoggerFactory.getLogger(AlgorithmService.class);
 
     private static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
     private static final long MAX_ARRAY_ELEMENT = 1_000_000_000L;
@@ -61,6 +66,7 @@ public class AlgorithmService {
             return new HashResult(toEnumName(normalizedAlg), digest, text.length());
         } catch (NoSuchAlgorithmException e) {
             // 正常不应走到，resolveAlgorithm 已过滤；兜底
+            log.error("哈希算法不可用: {}", normalizedAlg, e);
             throw new BizException(999, "ALGO_999: 哈希算法不可用: " + normalizedAlg);
         }
     }
@@ -92,7 +98,11 @@ public class AlgorithmService {
         List<Integer> original = new ArrayList<>(array);
         int[] work = new int[original.size()];
         for (int i = 0; i < original.size(); i++) {
-            work[i] = original.get(i);
+            Integer val = original.get(i);
+            if (val == null) {
+                throw new BizException(8, "ALGO_008: 数组元素不能为 null");
+            }
+            work[i] = val;
         }
 
         long start = System.nanoTime();
@@ -161,10 +171,6 @@ public class AlgorithmService {
     }
 
     private String toHex(byte[] bytes) {
-        StringBuilder sb = new StringBuilder(bytes.length * 2);
-        for (byte b : bytes) {
-            sb.append(String.format("%02x", b));
-        }
-        return sb.toString();
+        return HexFormat.of().formatHex(bytes);
     }
 }

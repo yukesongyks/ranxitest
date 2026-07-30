@@ -2,6 +2,8 @@ package com.example.myapp.controllers;
 
 import com.example.myapp.exception.BizException;
 import com.example.myapp.services.ExportService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,10 +13,10 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -24,6 +26,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/algorithm")
 public class ExportController {
+
+    private static final Logger log = LoggerFactory.getLogger(ExportController.class);
+
+    private static final DateTimeFormatter TIMESTAMP_FORMAT = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
     private final ExportService exportService;
 
@@ -63,7 +69,7 @@ public class ExportController {
             }
 
             String fileExtension = resolvedFormat.toLowerCase();
-            String timestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+            String timestamp = TIMESTAMP_FORMAT.format(LocalDateTime.now());
             String fileName = "algorithm-" + resolvedType + "-" + timestamp + "." + fileExtension;
             String contentType = "JSON".equals(resolvedFormat)
                     ? "application/json;charset=UTF-8"
@@ -76,12 +82,15 @@ public class ExportController {
             writer.write(content);
             writer.flush();
         } catch (BizException e) {
+            log.warn("导出业务异常 code={} msg={}", e.getCode(), e.getMessage());
             writeJsonError(response, HttpServletResponse.SC_BAD_REQUEST,
                     e.getCode(), e.getMessage());
         } catch (NumberFormatException e) {
+            log.warn("导出 array 解析失败", e);
             writeJsonError(response, HttpServletResponse.SC_BAD_REQUEST,
                     3, "EXPORT_003: array 包含非整数: " + e.getMessage());
         } catch (Exception e) {
+            log.error("导出异常 type={} format={}", type, format, e);
             writeJsonError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                     999, "EXPORT_999: 导出异常: " + e.getMessage());
         }
@@ -101,7 +110,18 @@ public class ExportController {
     private void writeJsonError(HttpServletResponse response, int status, int code, String msg) throws IOException {
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(status);
-        response.getWriter().write("{\"code\":" + code + ",\"msg\":\"" + msg + "\"}");
+        response.getWriter().write("{\"code\":" + code + ",\"msg\":\"" + escapeJson(msg) + "\"}");
+    }
+
+    private String escapeJson(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                .replace("\t", "\\t");
     }
 
     private String resolveFormat(String format) {
