@@ -42,7 +42,7 @@ public class ExportService {
                 }
                 String hashResult = algoService.hash(input);
                 return buildCsv("hash_export.csv", "input,result",
-                        input + "," + hashResult);
+                        csvEscape(input) + "," + csvEscape(hashResult));
             case "bubble-sort":
                 if (arr == null || arr.isEmpty()) {
                     throw new BizException(ErrorCode.EXPORT_002, ErrorCode.MSG_EXPORT_MISSING_PARAM);
@@ -50,7 +50,7 @@ public class ExportService {
                 int[] parsedArr = parseArray(arr);
                 int[] sortedArr = algoService.bubbleSort(parsedArr);
                 return buildCsv("bubble_sort_export.csv", "input,result",
-                        arr + "," + arrayToString(sortedArr));
+                        csvEscape(arr) + "," + csvEscape(arrayToString(sortedArr)));
             default:
                 throw new BizException(ErrorCode.EXPORT_001, ErrorCode.MSG_EXPORT_TYPE_INVALID);
         }
@@ -63,7 +63,7 @@ public class ExportService {
             baos.write((data + "\n").getBytes(StandardCharsets.UTF_8));
             return new ExportResult(filename, baos.toByteArray());
         } catch (IOException e) {
-            throw new BizException(ErrorCode.EXPORT_003, ErrorCode.MSG_EXPORT_FAIL);
+            throw new BizException(ErrorCode.EXPORT_003, ErrorCode.MSG_EXPORT_FAIL, e);
         }
     }
 
@@ -71,9 +71,31 @@ public class ExportService {
         String[] parts = arrStr.split(",");
         int[] result = new int[parts.length];
         for (int i = 0; i < parts.length; i++) {
-            result[i] = Integer.parseInt(parts[i].trim());
+            try {
+                result[i] = Integer.parseInt(parts[i].trim());
+            } catch (NumberFormatException e) {
+                throw new BizException(ErrorCode.EXPORT_001, ErrorCode.MSG_EXPORT_TYPE_INVALID, e);
+            }
         }
         return result;
+    }
+
+    /**
+     * 对 CSV 字段做安全转义，防止 CSV 公式注入和格式破坏。
+     * 含逗号、引号、换行符，或以 =/+/-/@ 开头的字段用双引号包裹并转义内部引号。
+     */
+    private String csvEscape(String field) {
+        if (field == null) {
+            return "";
+        }
+        boolean needQuote = field.contains(",") || field.contains("\"")
+                || field.contains("\n") || field.contains("\r")
+                || field.startsWith("=") || field.startsWith("+")
+                || field.startsWith("-") || field.startsWith("@");
+        if (!needQuote) {
+            return field;
+        }
+        return "\"" + field.replace("\"", "\"\"") + "\"";
     }
 
     private String arrayToString(int[] arr) {

@@ -1,7 +1,15 @@
 package com.example.myapp.models;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.PrePersist;
+import javax.persistence.Table;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 /**
  * 接口调用日志实体（埋点记录）。
@@ -55,9 +63,9 @@ public class CallLog {
     @PrePersist
     protected void onCreate() {
         if (this.callTime == null) {
-            this.callTime = LocalDateTime.now();
+            this.callTime = LocalDateTime.now(ZoneOffset.UTC);
         }
-        this.gmtCreate = LocalDateTime.now();
+        this.gmtCreate = LocalDateTime.now(ZoneOffset.UTC);
     }
 
     public CallLog() {

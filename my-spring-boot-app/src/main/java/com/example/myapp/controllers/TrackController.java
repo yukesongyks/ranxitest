@@ -29,8 +29,7 @@ public class TrackController {
     @GetMapping("/statistics")
     public ApiResult<StatisticsVO> statistics(@RequestParam String dimension,
                                               @RequestParam(required = false) String startDate,
-                                              @RequestParam(required = false) String endDate,
-                                              @RequestParam(required = false) String chartType) {
+                                              @RequestParam(required = false) String endDate) {
         StatisticsVO data = trackService.statistics(dimension, startDate, endDate);
         return ApiResult.success(data);
     }

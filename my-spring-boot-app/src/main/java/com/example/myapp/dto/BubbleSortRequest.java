@@ -1,6 +1,6 @@
 package com.example.myapp.dto;
 
-import javax.validation.constraints.NotEmpty;
+import com.example.myapp.services.AlgoService;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
@@ -10,7 +10,7 @@ import javax.validation.constraints.Size;
 public class BubbleSortRequest {
 
     @NotNull(message = "数组不能为空")
-    @Size(max = 1000, message = "数组长度超过限制（最大1000）")
+    @Size(max = AlgoService.MAX_ARRAY_LENGTH, message = "数组长度超过限制（最大1000）")
     private int[] arr;
 
     @NotNull(message = "userId不能为空")

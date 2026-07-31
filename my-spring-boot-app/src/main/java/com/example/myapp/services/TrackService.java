@@ -3,7 +3,6 @@ package com.example.myapp.services;
 import com.example.myapp.common.BizException;
 import com.example.myapp.common.ErrorCode;
 import com.example.myapp.dto.StatisticsVO;
-import com.example.myapp.enums.CallResult;
 import com.example.myapp.enums.Dimension;
 import com.example.myapp.models.CallLog;
 import com.example.myapp.models.User;
@@ -17,10 +16,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * 埋点服务，提供异步调用日志记录和多维度统计查询。
@@ -30,7 +34,6 @@ public class TrackService {
 
     private static final Logger log = LoggerFactory.getLogger(TrackService.class);
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    private static final DateTimeFormatter DATE_TIME_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     private final CallLogRepository callLogRepository;
     private final UserRepository userRepository;
@@ -51,11 +54,15 @@ public class TrackService {
      */
     @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
     public void recordCall(String apiName, Long userId, Long duration, String result) {
+        if (userId == null) {
+            log.warn("埋点跳过: userId 为空, apiName={}", apiName);
+            return;
+        }
         try {
             CallLog callLog = new CallLog();
             callLog.setApiName(apiName);
             callLog.setUserId(userId);
-            callLog.setCallTime(LocalDateTime.now());
+            callLog.setCallTime(LocalDateTime.now(ZoneOffset.UTC));
             callLog.setDuration(duration);
             callLog.setResult(result);
 
@@ -173,7 +180,7 @@ public class TrackService {
         try {
             return LocalDate.parse(dateStr.trim(), DATE_FMT).atStartOfDay();
         } catch (DateTimeParseException e) {
-            throw new BizException(ErrorCode.TRACK_002, ErrorCode.MSG_DATE_FORMAT_ERROR);
+            throw new BizException(ErrorCode.TRACK_002, ErrorCode.MSG_DATE_FORMAT_ERROR, e);
         }
     }
 
@@ -184,7 +191,7 @@ public class TrackService {
         try {
             return LocalDate.parse(dateStr.trim(), DATE_FMT).atTime(23, 59, 59);
         } catch (DateTimeParseException e) {
-            throw new BizException(ErrorCode.TRACK_002, ErrorCode.MSG_DATE_FORMAT_ERROR);
+            throw new BizException(ErrorCode.TRACK_002, ErrorCode.MSG_DATE_FORMAT_ERROR, e);
         }
     }
 }

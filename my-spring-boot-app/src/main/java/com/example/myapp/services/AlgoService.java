@@ -17,6 +17,11 @@ public class AlgoService {
     private static final String HELLO_WORLD_RESULT = "Hello World";
 
     /**
+     * 冒泡排序数组的最大长度限制。
+     */
+    public static final int MAX_ARRAY_LENGTH = 1000;
+
+    /**
      * 返回固定字符串 "Hello World"。
      *
      * @return 固定字符串
@@ -40,7 +45,7 @@ public class AlgoService {
             byte[] hashBytes = digest.digest(input.getBytes(StandardCharsets.UTF_8));
             return bytesToHex(hashBytes);
         } catch (NoSuchAlgorithmException e) {
-            throw new BizException(ErrorCode.ALGO_004, ErrorCode.MSG_HASH_ERROR);
+            throw new BizException(ErrorCode.ALGO_004, ErrorCode.MSG_HASH_ERROR, e);
         }
     }
 
@@ -54,7 +59,7 @@ public class AlgoService {
         if (arr == null) {
             throw new BizException(ErrorCode.ALGO_005, ErrorCode.MSG_ARRAY_NULL);
         }
-        if (arr.length > 1000) {
+        if (arr.length > MAX_ARRAY_LENGTH) {
             throw new BizException(ErrorCode.ALGO_006, ErrorCode.MSG_ARRAY_TOO_LONG);
         }
         int[] result = arr.clone();

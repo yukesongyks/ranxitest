@@ -93,8 +93,9 @@ public class TrackAspect {
             if (value instanceof Number) {
                 return ((Number) value).longValue();
             }
-        } catch (NoSuchFieldException | IllegalAccessException ignored) {
-            // 不是 DTO 类，忽略
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            // 不是 DTO 类，或字段不可访问（Java 17+ InaccessibleObjectException 继承自 IllegalAccessException），忽略
+            log.debug("反射提取 userId 未命中, class={}", obj.getClass().getName());
         }
         return null;
     }

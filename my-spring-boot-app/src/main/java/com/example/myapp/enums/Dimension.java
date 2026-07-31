@@ -14,14 +14,6 @@ public enum Dimension {
      * 将字符串安全地转为枚举值，不匹配时返回 null。
      */
     public static Dimension fromString(String value) {
-        if (value == null) {
-            return null;
-        }
-        for (Dimension dim : values()) {
-            if (dim.name().equalsIgnoreCase(value)) {
-                return dim;
-            }
-        }
-        return null;
+        return EnumUtil.fromString(values(), value);
     }
 }
