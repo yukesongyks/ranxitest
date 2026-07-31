@@ -1,0 +1,23 @@
+ranxitest 仓库概览 (ranxitest-0314-test)
+=========================================
+
+本文件为仓库简要概览文档。
+
+仓库基本信息:
+- 仓库名: ranxitest
+- 分支: AI/task-DEV-966dcd0a-7905-11f1-9649-3b4281182f10-acf43e69-72b4-47d6-
+- 基线分支: 0314-test
+- 仓库类型: Spring Boot 应用工程仓库
+
+目录结构:
+- README.md              仓库自述文件
+- my-spring-boot-app/    Spring Boot 应用工程目录
+- .github/               GitHub 工作流配置
+- .gitignore / .gitattributes
+- INTRO.txt              仓库说明文档
+- OVERVIEW.txt           本概览文档
+
+说明:
+- 本仓库包含一个 Spring Boot 应用工程 (my-spring-boot-app)。
+- 本文档由 DTCoder 基于任务 DEV-966dcd0a-7905-11f1-9649-3b4281182f10 生成。
+- 生成时间(UTC): 2026-07-31
