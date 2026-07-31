@@ -1,0 +1,31 @@
+{
+  "blocker_count": 2,
+  "task_id": "DEV-966dcd0a-7905-11f1-9649-3b4281182f10-b7d51ff8-1606-43c5-a215-ba79623fbda2",
+  "cr_report_path": ".agents/20260731-helloworld接口与埋点可视化开发/cr_report.md",
+  "review_date": "2026-07-31",
+  "summary": {
+    "P0": 2,
+    "P1": 6,
+    "P2": 7
+  },
+  "blockers": [
+    {
+      "id": "P0-1",
+      "severity": "P0",
+      "category": "S-injection",
+      "title": "ExportService CSV 注入/格式破坏",
+      "file": "ExportService.java",
+      "lines": "44-45,52-53",
+      "description": "用户 input 直接拼入 CSV body，含逗号/换行符破坏列结构，含 =/+/-/@ 开头触发 Excel 公式注入"
+    },
+    {
+      "id": "P0-2",
+      "severity": "P0",
+      "category": "S-injection",
+      "title": "ExportService.parseArray 未捕获 NumberFormatException",
+      "file": "ExportService.java",
+      "lines": "70-76",
+      "description": "Integer.parseInt 未 catch NumberFormatException，恶意输入导致 500 而非业务错误码"
+    }
+  ]
+}
