@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hello World</title>
+    <style>
+        :root {
+            --primary: #0f766e;
+            --bg: linear-gradient(135deg, #f0fdf4, #eff6ff);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: "Helvetica Neue", "PingFang SC", sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            text-align: center;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(15, 118, 110, 0.12);
+        }
+
+        h1 {
+            font-size: 36px;
+            color: var(--primary);
+            margin-bottom: 16px;
+        }
+
+        p {
+            font-size: 18px;
+            color: #6b7280;
+            margin-bottom: 32px;
+        }
+
+        .btn {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 14px 32px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(15, 118, 110, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Hello World</h1>
+        <p>来自后端的消息：</p>
+        <p id="hello-message" style="font-size: 22px; color: var(--primary); font-weight: 500;">Hello, World!</p>
+        <a href="/" class="btn">返回首页</a>
+    </div>
+    <script>
+        (function () {
+            fetch('/api/hello')
+                .then(function (response) {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(function (data) {
+                    var el = document.getElementById('hello-message');
+                    if (el && data && typeof data.message !== 'undefined') {
+                        el.textContent = data.message;
+                    }
+                })
+                .catch(function () {
+                    // fetch 失败时保留默认文本 "Hello, World!"，无需额外处理
+                });
+        })();
+    </script>
+</body>
+</html>
