@@ -1,0 +1,12 @@
+ranxitest 仓库说明文档（ranxitest-0314-test 工作区）
+======================================================
+
+本文件由 DTCoder 自动创建。
+
+- 仓库：ranxitest
+- 工作区分支：AI/task-DEV-966dcd0a-7905-11f1-9649-3b4281182f10-a5258dce-62bf-4fe2-
+- 基线分支：0314-test
+- 创建时间：2026-07-31
+- 用途：跨仓协同任务示例产物（简单 txt 文档）
+
+备注：该 worktree 含 my-spring-boot-app Spring Boot 项目结构。
