@@ -125,12 +125,15 @@ public class FixedAsset {
 
     @PrePersist
     protected void onCreate() {
+        // 注意：LocalDateTime.now() 使用系统默认时区，与 Item.java 保持一致；
+        // 多时区部署前应评估改用 Instant.now() 或指定时区
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
     }
 
     @PreUpdate
     protected void onUpdate() {
+        // 同上：多时区部署前评估时区策略
         updatedAt = LocalDateTime.now();
     }
 
@@ -304,6 +307,8 @@ package com.example.myapp.services;
 
 import com.example.myapp.models.FixedAsset;
 import com.example.myapp.repositories.FixedAssetRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -315,6 +320,8 @@ import java.util.Optional;
 @Service
 @Transactional
 public class FixedAssetService {
+
+    private static final Logger logger = LoggerFactory.getLogger(FixedAssetService.class);
 
     private final FixedAssetRepository fixedAssetRepository;
 
@@ -342,6 +349,7 @@ public class FixedAssetService {
             }
             return fixedAssetRepository.save(asset);
         } catch (DataIntegrityViolationException e) {
+            logger.warn("保存固定资产时发生数据完整性冲突，assetNo={}", asset.getAssetNo(), e);
             throw new IllegalArgumentException("资产编号 '" + asset.getAssetNo() + "' 已存在", e);
         }
     }
@@ -371,6 +379,7 @@ public class FixedAssetService {
 
             return fixedAssetRepository.save(asset);
         } catch (DataIntegrityViolationException e) {
+            logger.warn("更新固定资产时发生数据完整性冲突，id={} assetNo={}", id, details.getAssetNo(), e);
             throw new IllegalArgumentException("资产编号 '" + details.getAssetNo() + "' 已存在", e);
         }
     }
@@ -416,6 +425,8 @@ package com.example.myapp.controllers;
 
 import com.example.myapp.models.FixedAsset;
 import com.example.myapp.services.FixedAssetService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -430,6 +441,8 @@ import java.util.List;
 @Controller
 @RequestMapping("/assets")
 public class FixedAssetController {
+
+    private static final Logger logger = LoggerFactory.getLogger(FixedAssetController.class);
 
     private static final List<String> STATUSES = Arrays.asList("在用", "闲置", "维修", "报废");
 
@@ -458,8 +471,10 @@ public class FixedAssetController {
     @PostMapping
     public String createAsset(@Valid @ModelAttribute FixedAsset asset,
                               BindingResult result,
+                              Model model,
                               RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
+            model.addAttribute("statuses", getAllStatuses());
             return "assets/form";
         }
         try {
@@ -467,6 +482,7 @@ public class FixedAssetController {
             redirectAttributes.addFlashAttribute("success", "固定资产创建成功！");
             return "redirect:/assets";
         } catch (IllegalArgumentException e) {
+            logger.warn("创建固定资产失败，assetNo={}", asset.getAssetNo(), e);
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/assets/new";
         }
@@ -481,6 +497,7 @@ public class FixedAssetController {
             model.addAttribute("statuses", getAllStatuses());
             return "assets/form";
         } catch (IllegalArgumentException e) {
+            logger.warn("查询编辑表单失败，固定资产不存在，id={}", id, e);
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/assets";
         }
@@ -490,8 +507,10 @@ public class FixedAssetController {
     public String updateAsset(@PathVariable Long id,
                              @Valid @ModelAttribute FixedAsset asset,
                              BindingResult result,
+                             Model model,
                              RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
+            model.addAttribute("statuses", getAllStatuses());
             return "assets/form";
         }
         try {
@@ -499,6 +518,7 @@ public class FixedAssetController {
             redirectAttributes.addFlashAttribute("success", "固定资产更新成功！");
             return "redirect:/assets";
         } catch (IllegalArgumentException e) {
+            logger.warn("更新固定资产失败，id={}", id, e);
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/assets/" + id + "/edit";
         }
@@ -510,6 +530,7 @@ public class FixedAssetController {
             fixedAssetService.deleteById(id);
             redirectAttributes.addFlashAttribute("success", "固定资产删除成功！");
         } catch (IllegalArgumentException e) {
+            logger.warn("删除固定资产失败，id={}", id, e);
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/assets";
@@ -550,6 +571,7 @@ public class FixedAssetController {
             model.addAttribute("asset", asset);
             return "assets/view";
         } catch (IllegalArgumentException e) {
+            logger.warn("查看固定资产详情失败，id={}", id, e);
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/assets";
         }
