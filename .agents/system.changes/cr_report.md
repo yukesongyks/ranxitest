@@ -247,9 +247,11 @@ L53|        }
 
 ### P1
 
-- [ ] **P1** `M016` `my-spring-boot-app/src/main/java/com/example/myapp/models/FixedAsset.java:70-79` — 生产多时区部署前评估改用 `Instant.now()` 或指定时区替代 `LocalDateTime.now()`（与 Item.java 现有模式一致的取舍，当前阶段已标注注释）
+- [x] **P1** `M016` `my-spring-boot-app/src/main/java/com/example/myapp/models/FixedAsset.java:70-79` — 生产多时区部署前评估改用 `Instant.now()` 或指定时区替代 `LocalDateTime.now()`（与 Item.java 现有模式一致的取舍，当前阶段已标注注释）✅ 保持现状：编码规范 datetime.md §3【推荐】正例使用 `LocalDateTime.now()`，与 `Item.java` 现有模式一致，当前阶段注释标注已充分
 
 ### P2（可选）
 
-- [ ] **P2** `A2.2` `my-spring-boot-app/src/main/java/com/example/myapp/models/FixedAsset.java:3-4` — 将 `javax.persistence.*` / `javax.validation.constraints.*` 通配导入展开为具体导入
-- [ ] **P2** `A2.2` `my-spring-boot-app/src/main/java/com/example/myapp/controllers/FixedAssetController.java:11` — 将 `org.springframework.web.bind.annotation.*` 通配导入展开
+- [x] **P2** `A2.2` `my-spring-boot-app/src/main/java/com/example/myapp/models/FixedAsset.java:3-4` — 将 `javax.persistence.*` / `javax.validation.constraints.*` 通配导入展开为具体导入 ✅ 已修复（Round 3）
+- [x] **P2** `A2.2` `my-spring-boot-app/src/main/java/com/example/myapp/controllers/FixedAssetController.java:11` — 将 `org.springframework.web.bind.annotation.*` 通配导入展开 ✅ 已修复（Round 3）
+- [x] **P2** `A2.2` `FixedAssetServiceTest.java` — 将 `import static org.junit.jupiter.api.Assertions.*` 通配导入展开为具体导入 ✅ 已修复（Round 3）
+- [x] **P2** `A2.2` `FixedAssetControllerTest.java` — 将 `import static org.mockito.Mockito.*` / `import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*` 通配导入展开为具体导入 ✅ 已修复（Round 3）
