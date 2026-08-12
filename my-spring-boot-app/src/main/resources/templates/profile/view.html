@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人中心</title>
+    <style>
+        :root {
+            --bg: #f6f8fb;
+            --card: #ffffff;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --primary: #0f766e;
+            --border: #e5e7eb;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: "Helvetica Neue", "PingFang SC", sans-serif;
+            background: linear-gradient(135deg, #eef7f4, #f7fafc);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        .nav {
+            background: white;
+            border-bottom: 1px solid var(--border);
+            padding: 14px 32px;
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .nav-brand {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .nav-link {
+            font-size: 14px;
+            color: var(--muted);
+            text-decoration: none;
+        }
+
+        .nav-link:hover {
+            color: var(--primary);
+        }
+
+        .container {
+            max-width: 760px;
+            margin: 40px auto;
+            padding: 0 16px;
+        }
+
+        .profile-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+        }
+
+        .profile-header {
+            background: linear-gradient(135deg, #0f766e, #0d9488);
+            padding: 40px 32px 32px;
+            display: flex;
+            align-items: flex-end;
+            gap: 24px;
+        }
+
+        .avatar {
+            width: 88px;
+            height: 88px;
+            border-radius: 50%;
+            border: 4px solid rgba(255,255,255,0.8);
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: white;
+            font-weight: 700;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-header-info {
+            flex: 1;
+        }
+
+        .profile-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+            margin: 0 0 4px;
+        }
+
+        .profile-email {
+            font-size: 14px;
+            color: rgba(255,255,255,0.8);
+            margin: 0;
+        }
+
+        .profile-body {
+            padding: 32px;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+
+        .info-section {
+            margin-bottom: 28px;
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .info-item.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: var(--muted);
+            font-weight: 500;
+        }
+
+        .info-value {
+            font-size: 15px;
+            color: var(--text);
+        }
+
+        .info-value.empty {
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        .profile-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+        }
+
+        .btn {
+            display: inline-block;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            text-decoration: none;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0d9488;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .joined-date {
+            font-size: 13px;
+            color: rgba(255,255,255,0.7);
+            margin-top: 6px;
+        }
+
+        @media (max-width: 600px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            .profile-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="nav">
+    <a href="/" class="nav-brand">📦 物品管理系统</a>
+    <a href="/items" class="nav-link">物品列表</a>
+    <a href="/profile" class="nav-link" style="color: var(--primary); font-weight: 500;">个人中心</a>
+</nav>
+
+<div class="container">
+
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+    <div class="profile-card">
+        <div class="profile-header">
+            <div class="avatar">
+                <img th:if="${user.avatarUrl != null and !user.avatarUrl.isEmpty()}"
+                     th:src="${user.avatarUrl}" alt="头像">
+                <span th:if="${user.avatarUrl == null or user.avatarUrl.isEmpty()}"
+                      th:text="${#strings.substring(user.username, 0, 1).toUpperCase()}"></span>
+            </div>
+            <div class="profile-header-info">
+                <p class="profile-name" th:text="${user.username}"></p>
+                <p class="profile-email" th:text="${user.email}"></p>
+                <p class="joined-date" th:if="${user.createdAt != null}"
+                   th:text="'注册于 ' + ${#temporals.format(user.createdAt, 'yyyy年MM月dd日')}"></p>
+            </div>
+        </div>
+
+        <div class="profile-body">
+            <div class="info-section">
+                <div class="section-title">基本信息</div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">用户名</span>
+                        <span class="info-value" th:text="${user.username}"></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">邮箱</span>
+                        <span class="info-value" th:text="${user.email}"></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">手机号</span>
+                        <span class="info-value"
+                              th:text="${user.phone != null and !user.phone.isEmpty() ? user.phone : '未填写'}"
+                              th:class="${user.phone != null and !user.phone.isEmpty() ? 'info-value' : 'info-value empty'}">
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">所在地</span>
+                        <span class="info-value"
+                              th:text="${user.location != null and !user.location.isEmpty() ? user.location : '未填写'}"
+                              th:class="${user.location != null and !user.location.isEmpty() ? 'info-value' : 'info-value empty'}">
+                        </span>
+                    </div>
+                    <div class="info-item full-width">
+                        <span class="info-label">个人简介</span>
+                        <span class="info-value"
+                              th:text="${user.bio != null and !user.bio.isEmpty() ? user.bio : '还没有填写个人简介...'}"
+                              th:class="${user.bio != null and !user.bio.isEmpty() ? 'info-value' : 'info-value empty'}">
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-actions">
+                <a href="/profile/edit" class="btn btn-primary">✏️ 编辑信息</a>
+                <a href="/items" class="btn btn-secondary">返回物品列表</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

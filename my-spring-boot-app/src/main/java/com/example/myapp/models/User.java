@@ -1,8 +1,7 @@
 package com.example.myapp.models;
 
 import javax.persistence.*;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
 import java.time.LocalDateTime;
 
 @Entity
@@ -13,13 +12,14 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Size(min = 1, max = 50, message = "用户名长度必须在1-50之间")
-    @Column(length = 50)
+    @NotBlank(message = "用户名不能为空")
+    @Size(min = 2, max = 50, message = "用户名长度必须在2-50之间")
+    @Column(nullable = false, unique = true, length = 50)
     private String username;
 
+    @NotBlank(message = "邮箱不能为空")
     @Email(message = "邮箱格式不正确")
-    @Size(max = 100, message = "邮箱长度不能超过100")
-    @Column(length = 100)
+    @Column(nullable = false, unique = true, length = 100)
     private String email;
 
     @Size(max = 20, message = "手机号长度不能超过20")
@@ -29,6 +29,13 @@ public class User {
     @Size(max = 200, message = "个人简介不能超过200字")
     @Column(length = 200)
     private String bio;
+
+    @Size(max = 100, message = "所在地不能超过100字")
+    @Column(length = 100)
+    private String location;
+
+    @Column(name = "avatar_url", length = 500)
+    private String avatarUrl;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -48,11 +55,6 @@ public class User {
     }
 
     public User() {
-    }
-
-    public User(String username, String email) {
-        this.username = username;
-        this.email = email;
     }
 
     public Long getId() {
@@ -93,6 +95,22 @@ public class User {
 
     public void setBio(String bio) {
         this.bio = bio;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
     }
 
     public LocalDateTime getCreatedAt() {
