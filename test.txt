@@ -1,0 +1,8 @@
+这是一个简单 txt 文档测试。
+
+- 任务：测试一下简单txt文档
+- 技能：dtazziboot-java-coding-standards
+- 阶段：coding
+- 生成时间：2025-08-14
+
+本文件用于验证 DTCoder 全自动流水线产物写入能力。
