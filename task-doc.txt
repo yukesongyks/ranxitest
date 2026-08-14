@@ -1,0 +1,6 @@
+=== ranxitest 仓库任务文档 ===
+生成时间: 2025-07-17
+仓库: ranxitest-0314-test
+分支: AI/task-DEV-f4ad1a6e-7360-11f1-8c66-df5563d236aa-9285b5a5-acc0-45af-
+项目类型: Java Spring Boot (my-spring-boot-app)
+说明: 本文件为跨仓库协同开发任务中在 ranxitest 仓库生成的简单 txt 文档。
