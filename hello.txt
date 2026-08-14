@@ -1,0 +1,3 @@
+这是一个简单的 txt 文档。
+由 DTCoder 基于技能 dtazziboot-java-coding-standards 生成。
+用途：演示文档产物输出。
