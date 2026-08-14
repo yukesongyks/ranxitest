@@ -5,8 +5,9 @@ import java.util.Comparator;
 /**
  * 快速排序算法工具类。
  *
- * <p>基于三数取中（median-of-three）优化的快速排序实现，提供原地排序能力。
+ * <p>基于三数取中（median-of-three）优化的三路快速排序实现，提供原地排序能力。
  * 支持 int[] 基本类型数组、泛型 Comparable 数组以及自定义 Comparator 排序。
+ * 三路分区（Dutch National Flag）确保所有相等元素场景下仍保持 O(n log n) 复杂度。
  *
  * <p>平均时间复杂度 O(n log n)，空间复杂度 O(log n)（递归栈深度）。
  * 所有公共方法对 null 和长度 ≤ 1 的数组安全处理，不抛异常（除 Comparator 为 null 外）。
@@ -15,6 +16,9 @@ import java.util.Comparator;
  * @date 2026/08/14
  */
 public final class QuickSort {
+
+    /** 小数组阈值，子数组长度小于此值时使用插入排序优化 */
+    private static final int INSERTION_SORT_THRESHOLD = 10;
 
     /** 私有构造器，防止实例化 */
     private QuickSort() {
@@ -98,52 +102,77 @@ public final class QuickSort {
     // ======================== 核心算法：int[] ========================
 
     /**
-     * 递归快速排序核心（int[] 版本）。
+     * 递归快速排序核心（int[] 版本），小数组切换插入排序。
      */
     private static void quickSort(int[] arr, int lo, int hi, boolean ascending) {
         if (lo >= hi) {
             return;
         }
-        int pivotIndex = partition(arr, lo, hi, ascending);
-        quickSort(arr, lo, pivotIndex - 1, ascending);
-        quickSort(arr, pivotIndex + 1, hi, ascending);
+        if (hi - lo + 1 < INSERTION_SORT_THRESHOLD) {
+            insertionSort(arr, lo, hi, ascending);
+            return;
+        }
+        int[] range = threeWayPartition(arr, lo, hi, ascending);
+        quickSort(arr, lo, range[0] - 1, ascending);
+        quickSort(arr, range[1] + 1, hi, ascending);
     }
 
     /**
-     * 三数取中选取 pivot，并执行分区操作。
+     * 三路分区（Dutch National Flag）：将数组划分为 &lt; pivot、= pivot、&gt; pivot 三部分。
+     * 三数取中选取 pivot 值，相等元素集中在中间区域，确保全部相等元素场景下 O(n log n)。
      *
-     * @return pivot 最终位置索引
+     * @return int[2] = {lt, gt}，其中 arr[lo..lt-1] &lt; pivot, arr[lt..gt] == pivot, arr[gt+1..hi] &gt; pivot
      */
-    private static int partition(int[] arr, int lo, int hi, boolean ascending) {
-        // 三数取中：取 arr[lo]、arr[mid]、arr[hi] 的中位数作为 pivot
+    private static int[] threeWayPartition(int[] arr, int lo, int hi, boolean ascending) {
         int mid = lo + (hi - lo) / 2;
-        int pivot = medianOfThree(arr[lo], arr[mid], arr[hi]);
+        int pivotValue = medianOfThree(arr[lo], arr[mid], arr[hi]);
 
-        // 将 pivot 值交换到 hi 位置（简化分区逻辑）
-        if (pivot == arr[lo]) {
-            swap(arr, lo, hi);
-        } else if (pivot == arr[mid]) {
-            swap(arr, mid, hi);
-        }
-        // 如果 pivot == arr[hi]，无需交换
+        int lt = lo;
+        int gt = hi;
+        int i = lo;
 
-        int pivotValue = arr[hi];
-        int i = lo - 1;
-
-        for (int j = lo; j < hi; j++) {
-            boolean shouldMove;
+        while (i <= gt) {
             if (ascending) {
-                shouldMove = arr[j] < pivotValue;
+                if (arr[i] < pivotValue) {
+                    swap(arr, lt++, i++);
+                } else if (arr[i] > pivotValue) {
+                    swap(arr, i, gt--);
+                } else {
+                    i++;
+                }
             } else {
-                shouldMove = arr[j] > pivotValue;
-            }
-            if (shouldMove) {
-                i++;
-                swap(arr, i, j);
+                if (arr[i] > pivotValue) {
+                    swap(arr, lt++, i++);
+                } else if (arr[i] < pivotValue) {
+                    swap(arr, i, gt--);
+                } else {
+                    i++;
+                }
             }
         }
-        swap(arr, i + 1, hi);
-        return i + 1;
+        return new int[]{lt, gt};
+    }
+
+    /**
+     * 插入排序（int[] 版本），用于小数组优化。
+     */
+    private static void insertionSort(int[] arr, int lo, int hi, boolean ascending) {
+        for (int i = lo + 1; i <= hi; i++) {
+            int key = arr[i];
+            int j = i - 1;
+            if (ascending) {
+                while (j >= lo && arr[j] > key) {
+                    arr[j + 1] = arr[j];
+                    j--;
+                }
+            } else {
+                while (j >= lo && arr[j] < key) {
+                    arr[j + 1] = arr[j];
+                    j--;
+                }
+            }
+            arr[j + 1] = key;
+        }
     }
 
     /**
@@ -171,48 +200,77 @@ public final class QuickSort {
     // ======================== 核心算法：泛型 Comparable ========================
 
     /**
-     * 递归快速排序核心（泛型 Comparable 版本）。
+     * 递归快速排序核心（泛型 Comparable 版本），小数组切换插入排序。
      */
     private static <T extends Comparable<T>> void quickSortComparable(T[] arr, int lo, int hi, boolean ascending) {
         if (lo >= hi) {
             return;
         }
-        int pivotIndex = partitionComparable(arr, lo, hi, ascending);
-        quickSortComparable(arr, lo, pivotIndex - 1, ascending);
-        quickSortComparable(arr, pivotIndex + 1, hi, ascending);
+        if (hi - lo + 1 < INSERTION_SORT_THRESHOLD) {
+            insertionSortComparable(arr, lo, hi, ascending);
+            return;
+        }
+        int[] range = threeWayPartitionComparable(arr, lo, hi, ascending);
+        quickSortComparable(arr, lo, range[0] - 1, ascending);
+        quickSortComparable(arr, range[1] + 1, hi, ascending);
     }
 
     /**
-     * 分区操作（泛型 Comparable 版本）。
+     * 三路分区（泛型 Comparable 版本）。
+     *
+     * @return int[2] = {lt, gt}
      */
-    private static <T extends Comparable<T>> int partitionComparable(T[] arr, int lo, int hi, boolean ascending) {
+    private static <T extends Comparable<T>> int[] threeWayPartitionComparable(T[] arr, int lo, int hi, boolean ascending) {
         int mid = lo + (hi - lo) / 2;
-        T pivot = medianOfThreeComparable(arr[lo], arr[mid], arr[hi]);
+        T pivotValue = medianOfThreeComparable(arr[lo], arr[mid], arr[hi]);
 
-        if (pivot == arr[lo]) {
-            swapComparable(arr, lo, hi);
-        } else if (pivot == arr[mid]) {
-            swapComparable(arr, mid, hi);
-        }
+        int lt = lo;
+        int gt = hi;
+        int i = lo;
 
-        T pivotValue = arr[hi];
-        int i = lo - 1;
-
-        for (int j = lo; j < hi; j++) {
-            int cmp = arr[j].compareTo(pivotValue);
-            boolean shouldMove;
+        while (i <= gt) {
+            int cmp = arr[i].compareTo(pivotValue);
             if (ascending) {
-                shouldMove = cmp < 0;
+                if (cmp < 0) {
+                    swapComparable(arr, lt++, i++);
+                } else if (cmp > 0) {
+                    swapComparable(arr, i, gt--);
+                } else {
+                    i++;
+                }
             } else {
-                shouldMove = cmp > 0;
-            }
-            if (shouldMove) {
-                i++;
-                swapComparable(arr, i, j);
+                if (cmp > 0) {
+                    swapComparable(arr, lt++, i++);
+                } else if (cmp < 0) {
+                    swapComparable(arr, i, gt--);
+                } else {
+                    i++;
+                }
             }
         }
-        swapComparable(arr, i + 1, hi);
-        return i + 1;
+        return new int[]{lt, gt};
+    }
+
+    /**
+     * 插入排序（泛型 Comparable 版本），用于小数组优化。
+     */
+    private static <T extends Comparable<T>> void insertionSortComparable(T[] arr, int lo, int hi, boolean ascending) {
+        for (int i = lo + 1; i <= hi; i++) {
+            T key = arr[i];
+            int j = i - 1;
+            if (ascending) {
+                while (j >= lo && arr[j].compareTo(key) > 0) {
+                    arr[j + 1] = arr[j];
+                    j--;
+                }
+            } else {
+                while (j >= lo && arr[j].compareTo(key) < 0) {
+                    arr[j + 1] = arr[j];
+                    j--;
+                }
+            }
+            arr[j + 1] = key;
+        }
     }
 
     /**
@@ -244,41 +302,60 @@ public final class QuickSort {
     // ======================== 核心算法：自定义 Comparator ========================
 
     /**
-     * 递归快速排序核心（Comparator 版本）。
+     * 递归快速排序核心（Comparator 版本），小数组切换插入排序。
      */
     private static <T> void quickSortWithComparator(T[] arr, int lo, int hi, Comparator<T> comparator) {
         if (lo >= hi) {
             return;
         }
-        int pivotIndex = partitionWithComparator(arr, lo, hi, comparator);
-        quickSortWithComparator(arr, lo, pivotIndex - 1, comparator);
-        quickSortWithComparator(arr, pivotIndex + 1, hi, comparator);
+        if (hi - lo + 1 < INSERTION_SORT_THRESHOLD) {
+            insertionSortWithComparator(arr, lo, hi, comparator);
+            return;
+        }
+        int[] range = threeWayPartitionWithComparator(arr, lo, hi, comparator);
+        quickSortWithComparator(arr, lo, range[0] - 1, comparator);
+        quickSortWithComparator(arr, range[1] + 1, hi, comparator);
     }
 
     /**
-     * 分区操作（Comparator 版本）。
+     * 三路分区（Comparator 版本）。
+     *
+     * @return int[2] = {lt, gt}
      */
-    private static <T> int partitionWithComparator(T[] arr, int lo, int hi, Comparator<T> comparator) {
+    private static <T> int[] threeWayPartitionWithComparator(T[] arr, int lo, int hi, Comparator<T> comparator) {
         int mid = lo + (hi - lo) / 2;
-        T pivot = medianOfThreeComparator(arr[lo], arr[mid], arr[hi], comparator);
+        T pivotValue = medianOfThreeComparator(arr[lo], arr[mid], arr[hi], comparator);
 
-        if (pivot == arr[lo]) {
-            swapGeneric(arr, lo, hi);
-        } else if (pivot == arr[mid]) {
-            swapGeneric(arr, mid, hi);
-        }
+        int lt = lo;
+        int gt = hi;
+        int i = lo;
 
-        T pivotValue = arr[hi];
-        int i = lo - 1;
-
-        for (int j = lo; j < hi; j++) {
-            if (comparator.compare(arr[j], pivotValue) < 0) {
+        while (i <= gt) {
+            int cmp = comparator.compare(arr[i], pivotValue);
+            if (cmp < 0) {
+                swapGeneric(arr, lt++, i++);
+            } else if (cmp > 0) {
+                swapGeneric(arr, i, gt--);
+            } else {
                 i++;
-                swapGeneric(arr, i, j);
             }
         }
-        swapGeneric(arr, i + 1, hi);
-        return i + 1;
+        return new int[]{lt, gt};
+    }
+
+    /**
+     * 插入排序（Comparator 版本），用于小数组优化。
+     */
+    private static <T> void insertionSortWithComparator(T[] arr, int lo, int hi, Comparator<T> comparator) {
+        for (int i = lo + 1; i <= hi; i++) {
+            T key = arr[i];
+            int j = i - 1;
+            while (j >= lo && comparator.compare(arr[j], key) > 0) {
+                arr[j + 1] = arr[j];
+                j--;
+            }
+            arr[j + 1] = key;
+        }
     }
 
     /**
