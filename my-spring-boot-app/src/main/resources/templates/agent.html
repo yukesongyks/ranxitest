@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent 执行器</title>
+    <style>
+        :root {
+            --primary: #0f766e;
+            --accent: #2563eb;
+            --bg: linear-gradient(135deg, #f0fdf4, #eff6ff);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: "Helvetica Neue", "PingFang SC", sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            text-align: center;
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 36px;
+            color: var(--primary);
+            margin-bottom: 16px;
+        }
+
+        p {
+            font-size: 18px;
+            color: #6b7280;
+            margin-bottom: 32px;
+        }
+
+        .btn {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 14px 32px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            margin: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(15, 118, 110, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--accent);
+        }
+
+        .result-area {
+            margin-top: 32px;
+            padding: 24px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            text-align: left;
+            display: none;
+        }
+
+        .result-area.active {
+            display: block;
+        }
+
+        .result-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 16px;
+        }
+
+        .result-content {
+            background: #f8fafc;
+            padding: 16px;
+            border-radius: 8px;
+            font-family: "Consolas", "Monaco", monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-all;
+            color: #1e293b;
+            border: 1px solid #e2e8f0;
+        }
+
+        .config-info {
+            margin-top: 24px;
+            padding: 20px;
+            background: #f0f9ff;
+            border-radius: 8px;
+            text-align: left;
+        }
+
+        .config-info h3 {
+            margin-top: 0;
+            color: var(--accent);
+        }
+
+        .config-item {
+            margin: 8px 0;
+            font-size: 14px;
+            color: #475569;
+        }
+
+        .config-item strong {
+            color: #1e293b;
+        }
+
+        .loading {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Agent 执行器</h1>
+        <p>基于 YAML 配置的自动化 Agent 执行</p>
+
+        <button class="btn" onclick="executeDefaultStage()">执行默认 "编码实现" 阶段</button>
+        <button class="btn btn-secondary" onclick="toggleConfig()">查看配置详情</button>
+        <a href="/" class="btn" style="background: #6b7280;">返回首页</a>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Agent 正在处理中...</p>
+        </div>
+
+        <div class="result-area" id="resultArea">
+            <div class="result-title">执行结果</div>
+            <div class="result-content" id="resultContent"></div>
+        </div>
+
+        <div class="config-info" id="configInfo" style="display: none;">
+            <h3>YAML 配置详情</h3>
+            <div class="config-item"><strong>stage:</strong> 编码实现</div>
+            <div class="config-item"><strong>type:</strong> agent</div>
+            <div class="config-item"><strong>prompt:</strong> "帮我写个hello world"</div>
+            <div class="config-item"><strong>agent:</strong> dtcoder</div>
+            <div class="config-item"><strong>config.execute.humanAgentType:</strong> auto</div>
+            <div class="config-item"><strong>config.execute.timeout:</strong> 30</div>
+            <div class="config-item"><strong>config.execute.retryCount:</strong> 2</div>
+        </div>
+    </div>
+
+    <script>
+        function toggleConfig() {
+            const configInfo = document.getElementById('configInfo');
+            configInfo.style.display = configInfo.style.display === 'none' ? 'block' : 'none';
+        }
+
+        async function executeDefaultStage() {
+            const loading = document.getElementById('loading');
+            const resultArea = document.getElementById('resultArea');
+            const resultContent = document.getElementById('resultContent');
+
+            loading.classList.add('active');
+            resultArea.classList.remove('active');
+
+            try {
+                const response = await fetch('/api/agent/execute/default');
+                const data = await response.json();
+
+                loading.classList.remove('active');
+                resultArea.classList.add('active');
+
+                resultContent.textContent = data.result || '执行完成';
+            } catch (error) {
+                loading.classList.remove('active');
+                resultArea.classList.add('active');
+                resultContent.textContent = '执行出错: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>
