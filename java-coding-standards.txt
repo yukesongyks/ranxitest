@@ -1,0 +1,422 @@
+================================================================================
+数科业务 Java 编码规范精要手册
+================================================================================
+资料来源：dtazziboot-java-coding-standards（技能版本 v1.1.0）
+适用场景：Java 代码生成、单元测试编写、系分方案落地、模块开发、代码规范检查
+
+规范级别说明：
+  【强制】= 必须遵守，违反视为缺陷，代码审查一票否决
+  【推荐】= 建议遵守，存在合理例外时需在注释/评审中说明理由
+  【参考】= 供参考的最佳实践，按场景取舍
+
+--------------------------------------------------------------------------------
+0. 使用说明
+--------------------------------------------------------------------------------
+1) 完整细则以技能包 references/ 下各篇 Markdown 规约为准，本文件为精要速查版。
+2) 开发流程建议（源自技能 SKILL.md）：
+   ① 先读 README（SSOT.md 若有，则以其为准获取架构/模块文档路径）；
+   ② 每个模块按 READ -> TEST -> IMPL -> CHECK -> DOCS 五阶段推进；
+   ③ 测试先行（TDD）：实现业务代码前先产出单元测试；
+   ④ CHECK 阶段做 L1 静态检查（必做）+ L2 动态验证（mvn compile/test，环境受限
+      时标记跳过原因并输出待人工验证命令）。
+3) 产出位置约定：文档/编码报告写入用户指定路径，代码文件按工程结构自动定位，
+   不硬编码 docs/changes 等目录。
+
+--------------------------------------------------------------------------------
+1. 命名规约（references/naming.md）
+--------------------------------------------------------------------------------
+【强制】类名：大驼峰 UpperCamelCase（UserService、OrderDAO、CacheManager）。
+【强制】方法名：小驼峰 lowerCamelCase（getUserById、saveOrder、isValid）。
+【强制】变量名：小驼峰 lowerCamelCase（userName、orderList、totalCount）。
+【强制】常量名：全部大写，单词间用下划线分隔（MAX_CACHE_SIZE、DEFAULT_TIMEOUT）。
+【推荐】接口方法/属性不加任何修饰符（public 也不要加），并写有效 javadoc；
+        尽量不在接口中定义变量，确需定义则须与接口方法相关且为应用基础常量。
+【强制】Service/DAO 类：暴露服务必须是接口，实现类用 Impl 后缀区分
+        （CacheServiceImpl 实现 CacheService）。
+【推荐】形容能力的接口用 -able 形式形容词命名（AbstractTranslator 实现 Translatable）。
+【参考】枚举类名带 Enum 后缀，成员全大写、下划线分隔
+        （ProcessStatusEnum: SUCCESS / UNKNOWN_REASON）。
+Service/DAO 方法命名前缀：
+    get 获取单个对象 | list 获取多个对象（复数） | count 获取统计值
+    save/insert 插入 | remove/delete 删除 | update 修改
+领域模型后缀：
+    xxxDO 数据对象（xxx 为表名）| xxxDTO 传输对象 | xxxVO 展示对象
+    xxxBO 业务对象 | 禁止命名成 xxxPOJO
+【推荐】boolean 类型变量不要加 is 前缀（避免部分框架序列化出错）：
+    反例 Boolean isDeleted；正例 Boolean deleted。
+SQL/数据库字段与 POJO 对照：POJO 布尔属性不加 is，数据库字段必须加 is_。
+
+--------------------------------------------------------------------------------
+2. 常量定义规约（references/constants.md）
+--------------------------------------------------------------------------------
+【强制】禁止魔法值：不允许未经预先定义的常量（字符串/数字）直接出现在代码中。
+【强制】long/Long 赋值数值后缀用大写 L，禁止小写 l（Long a = 1000L;）。
+【推荐】不要用一个大而全的常量类，按功能归类（CacheConsts、SystemConfigConsts）。
+【推荐】常量复用层次：跨应用共享(二方库 constant 目录) > 应用内共享(一方库子模块)
+        > 子工程共享 > 包内共享 > 类内私有（private static final）。
+【推荐】变量值仅在固定范围内变化时用 enum（SeasonEnum）。
+常量类示例规范：public final class XxxConsts { private XxxConsts() {} ... }
+
+--------------------------------------------------------------------------------
+3. 格式规约（references/formatting.md）
+--------------------------------------------------------------------------------
+【强制】大括号：空块写成 {}；非空块左大括号前不换行、左大括号后换行、右大括号
+        前换行；右大括号后有 else 等则不换行，终止的右大括号后必须换行。
+【强制】小括号内侧不加空格；左大括号前必须加空格。
+【强制】if/for/while/switch/do 等保留字与左右括号之间必须加空格。
+【强制】任何二目、三目运算符（=、&&、+、- 等）左右两边必须加一个空格。
+【强制】缩进统一 4 个空格，禁止 tab 字符。
+【强制】注释双斜线与内容之间有且仅有一个空格（// 内容）。
+【强制】强转时右括号与被转值之间不加空格：（int）first。
+【强制】单行不超过 120 字符；换行时第二行缩进 4 空格、第三行起不再缩进；
+        运算符/方法点号与下文一起换行；参数换行在逗号后；括号前不换行。
+【强制】方法参数定义与传入时，逗号后必须加空格（method(args1, args2)）。
+【强制】IDE 文本编码 UTF-8，换行符使用 Unix 格式。
+【推荐】单个方法总行数不超过 80 行。
+【推荐】不同逻辑/语义/业务代码之间插入一个空行分隔，不多插。
+
+--------------------------------------------------------------------------------
+4. 注释规约（references/comments.md）
+--------------------------------------------------------------------------------
+【强制】类、属性、方法注释必须使用 javadoc（/** */），不得用 // 方式。
+【强制】所有抽象方法（含接口方法）必须用 javadoc：除返回值/参数/异常说明外，
+        必须说明该方法做什么、实现什么功能；子类实现要求一并说明。
+【强制】所有类必须添加创建者信息和创建日期（@author、@date，日期格式 yyyy/MM/dd）。
+【强制】方法内部单行注释：在被注释语句上方另起一行使用 //。
+【强制】方法内部多行注释：使用 /* */ 并与代码对齐。
+【强制】所有枚举类型字段必须有注释，说明每个数据项的用途。
+【强制】if/else if/else 结构中，else 相关条件注释紧挨放在执行语句第一行。
+【推荐】能用中文说清楚就用中文注释；代码修改时同步修改注释。
+【推荐】删除未使用的字段/方法/参数/内部变量；谨慎注释掉代码（说明动机或删除）；
+        TODO/FIXME 标记须注明标记人与标记时间，及时处理。
+【参考】注释力求精简准确；好的命名与结构是自解释的，避免过滥注释。
+
+--------------------------------------------------------------------------------
+5. OOP 规约（references/oop.md）
+--------------------------------------------------------------------------------
+【强制】禁止通过对象引用访问静态成员，直接用类名访问。
+【强制】所有覆写方法必须加 @Override 注解。
+【强制】相同参数类型、相同业务含义才可用可变参数，避免使用 Object；
+        可变参数必须放在参数列表最后（提倡尽量不用）。
+【强制】外部正在调用/二方库依赖的接口不允许修改方法签名；过时接口加
+        @Deprecated 并清晰说明替代接口。
+【强制】覆写 equals 必须同时覆写 hashCode（Set 存储对象、Map 键必须覆写两者）。
+【强制】equals 用常量或确定有值的对象调用，或用 Objects.equals(a, b)，防 NPE。
+【强制】所有整型包装类对象之间的值比较全部使用 equals，禁止 ==
+        （Integer 超过 -128~127 的缓存区间时 == 比较为 false）。
+【强制】浮点数使用 double/Double；浮点等值判断禁止 == / equals，
+        用误差范围（Math.abs(a-b) < diff）或 BigDecimal。
+【强制】BigDecimal 等值比较用 compareTo 而非 equals；禁止 new BigDecimal(double)，
+        使用 BigDecimal(String) 或 BigDecimal.valueOf()。
+【强制】POJO 类属性必须使用包装数据类型；DO/DTO/VO 禁止设定属性默认值；
+        POJO 类必须写 toString()。
+【强制】禁止在 POJO 中同时存在属性 xxx 的 isXxx() 和 getXxx() 方法。
+【推荐】final 用于：不允许继承的类、不允许修改引用的域、不允许覆写的方法、
+        不允许重新赋值的局部变量。
+【推荐】方法定义顺序：公有/保护方法 > 私有方法 > getter/setter（放最后）；
+        getter/setter 中尽量不增加业务逻辑。
+【推荐】循环体内字符串拼接使用 StringBuilder.append。
+【推荐】访问控制从严：构造方法/工具类私有化，成员按需 protected/private。
+【推荐】慎用 Object.clone（默认浅拷贝）。
+
+--------------------------------------------------------------------------------
+6. 集合处理规约（references/collections.md）
+--------------------------------------------------------------------------------
+【强制】keySet()/values()/entrySet() 返回的集合不可 add；
+        Collections.emptyList()/singletonList() 等 immutable list 不可增删；
+        Arrays.asList() 转出的集合不可 add/remove/clear。
+【强制】ArrayList.subList 结果不可强转 ArrayList（ClassCastException）；
+        对父集合增删元素会导致子列表遍历/增删出现 ConcurrentModificationException。
+【强制】Collectors.toMap() 必须传 mergeFunction 处理 key 冲突；value 为 null 会抛 NPE。
+【强制】集合转数组用 toArray(T[])，传类型一致且长度为 0 的空数组
+        （list.toArray(new String[0])，性能最优）。
+【强制】不要在 foreach 循环里 remove/add 元素；remove 用 Iterator 方式，
+        并发操作需对 Iterator 加锁。
+【推荐】Map 遍历用 entrySet 或 forEach，不用 keySet 二次取值。
+【推荐】集合初始化时指定初始容量（new HashMap<>(16)）。
+【推荐】泛型集合使用 diamond 语法（new ArrayList<>(10)）。
+【强制】泛型通配符：<? extends T> 集合不能 add；<? super T> 不能 get（PECS 原则）。
+【推荐】注意 Map 对 null 的限制：Hashtable/ConcurrentHashMap 的 K/V 均不允许 null；
+        TreeMap 的 Key 不允许；HashMap 的 K/V 均允许。
+【强制】Comparator 需满足传递性、反对称性、一致性（x>y、y>z 则 x>z；x=y 时
+        与 z 的比较结果一致），不能只要 1/-1 而无相等分支。
+
+--------------------------------------------------------------------------------
+7. 控制语句规约（references/control-flow.md）
+--------------------------------------------------------------------------------
+【强制】switch 每个 case 必须 continue/break/return 终止或注释说明落入下一 case；
+        switch 必须包含 default 且放在最后（即使为空）。
+【强制】switch 变量为 String 且为外部参数时，必须先做 null 判断。
+【强制】if/else/for/while/do 语句必须使用大括号，即使只有一行。
+【强制】三目运算符注意自动拆箱 NPE：表达式 1/2 有一个是原始类型或类型不一致时，
+        会发生强制拆箱升级。
+【强制】高并发场景避免用"等于"判断作为中断/退出条件，改用区间判断（> / <）。
+【推荐】表达异常分支优先使用卫语句（Guard Statements），少用 if-else；
+        if-else 嵌套超过 3 层改用状态/策略模式。
+【推荐】方法超过 10 行时，return/throw 等中断逻辑的右大括号后加空行；
+        复杂条件判断结果赋给有意义的布尔变量；禁止在条件表达式中插入赋值语句；
+        避免取反逻辑（用 if (x < 628) 而非 if (!(x >= 628))）。
+【推荐】循环体中的对象定义、数据库连接、try-catch 等尽量移至循环体外。
+【参考】参数校验场景：低频调用、开销大、高稳定要求、开放接口、敏感权限入口
+        需要校验；高频循环调用/底层高频方法/private 方法可不校验（注明）。
+
+--------------------------------------------------------------------------------
+8. 日期时间规约（references/datetime.md）
+--------------------------------------------------------------------------------
+【强制】日期 pattern 年份用小写 y（yyyy 当前年；YYYY 是周所属年，跨年周会出错）。
+【强制】区分 M（月）与 m（分钟）、H（24小时制）与 h（12小时制）。
+【强制】获取当前毫秒用 System.currentTimeMillis()，不用 new Date().getTime()。
+【强制】禁止使用 java.sql.Date / java.sql.Time / java.sql.Timestamp。
+【强制】不要写死一年 365 天，用 LocalDate.now().lengthOfYear() 处理闰年。
+【推荐】月份使用枚举（Calendar.JANUARY 等），注意 Date/Calendar 的 month 0-11。
+【推荐】JDK8+：Instant 代替 Date，LocalDateTime 代替 Calendar，
+        DateTimeFormatter 代替 SimpleDateFormat（线程安全）。
+
+--------------------------------------------------------------------------------
+9. 异常与日志规约（references/exception-logging.md）
+--------------------------------------------------------------------------------
+错误码：
+【强制】错误码 5 位字符串：来源（A 用户 / B 当前系统 / C 第三方服务）+ 4 位编号
+        （A0001 用户端错误、B0001 系统执行出错、C0001 第三方服务出错）。
+【强制】错误码不体现版本号与错误等级；编号一经审批永久固定；
+        优先复用已有错误码，避免随意定义；错误码不能直接展示给用户。
+异常处理：
+【强制】可通过预检查规避的 RuntimeException 不要 catch（NPE、越界等），用判空/边界检查。
+【强制】enum 的 valueOf 必须捕获 IllegalArgumentException。
+【强制】异常捕获后不做流程控制/条件控制；catch 区分稳定与非稳定代码，
+        尽可能区分异常类型分别处理。
+【强制】捕获异常必须处理，最外层业务使用者将异常转化为用户可理解的内容。
+【强制】事务场景 catch 后需要回滚时必须手动回滚事务。
+【强制】finally 必须关闭资源对象/流（JDK7+ 用 try-with-resources）；
+        禁止在 finally 中使用 return（会丢弃 try 中的返回点）。
+【强制】捕获异常与抛出异常完全匹配或为父类；RPC/二方包/动态生成类调用
+        用 Throwable 拦截。
+【推荐】方法返回值可为 null 但须注释说明；注意 NPE 场景（拆箱、DB 查询、
+        集合元素、远程调用、session 数据、级联调用）；可用 Optional 规避。
+【推荐】对外 http/api 接口用错误码；跨应用调用优先 Result 封装
+        （isSuccess + 错误码 + 错误信息）；应用内部推荐抛异常。
+【推荐】自定义异常区分 unchecked/checked，禁止直接抛 RuntimeException /
+        Exception / Throwable，用有业务含义的自定义异常（DAOException 等）。
+日志：
+【推荐】优先复用项目日志工具类（LoggerUtils），否则用 SLF4J。
+【强制】日志文件至少保存 15 天；网络运行状态/安全事件/个人敏感信息操作等
+        记录留存不少于 6 个月并多机备份。
+【强制】扩展日志命名：appName_logType_logName.log。
+【强制】日志字符串拼接使用占位符 {}；trace/debug/info 级别输出必须做级别开关判断。
+【强制】异常信息包含案发现场 + 异常堆栈，不处理则向上抛；
+        输出 POJO 必须覆写 toString。
+【强制】日志禁止直接用 JSON 工具把对象转 String；生产禁止 System.out /
+        System.err / e.printStackTrace()。
+【推荐】用户输入参数错误用 warn 级别；谨慎记日志（生产禁 debug，有选择输出 info）。
+
+--------------------------------------------------------------------------------
+10. 安全规约（references/security.md）
+--------------------------------------------------------------------------------
+用户输入校验：
+【强制】所有用户输入必须验证，前端 + 后端双重验证；优先白名单验证而非黑名单。
+SQL 注入防护：
+【强制】所有 SQL 用参数化查询，禁止字符串拼接；MyBatis 必须用 #{}，禁止 ${}；
+        LIKE 查询用 CONCAT('%', #{keyword}, '%')；
+        IN 查询用 <foreach> 参数化；
+        Order By/Group By 动态排序必须用白名单机制（<choose>/<when>），禁止直接拼接。
+XSS 防护：
+【强制】用户输入输出到页面必须 HTML 编码；按输出位置选择编码
+        （HTML 标签/属性、JavaScript、URL 参数等场景）；
+        富文本必须白名单过滤标签（允许 p/br/strong/em 等），可用 OWASP HtmlSanitizer
+        或蚂蚁内部 alipay-common-security-client；SOFAMVC 可配置全局转义。
+SSRF 防护：
+【强制】服务端网络调用必须校验目标域名/IP；域名确定用白名单校验，域名不确定 +
+        同步请求用 SSRF Hook 检测（AlipaySSRFChecker，必须 hookStop），异步请求做
+        DNS 解析校验；获取远程资源必须 URL 白名单校验。
+命令执行 / 文件处理 / XXE：
+【强制】（章节要点）禁止拼接外部参数执行命令；禁用 XML 外部实体（XXE）；
+        反序列化做白名单校验与数据来源验证；图片处理使用安全方案。
+反序列化与敏感信息：
+【强制】反序列化白名单校验、数据来源验证、敏感字段保护；
+        禁止硬编码敏感信息，敏感数据脱敏，密码安全存储。
+权限控制（章节要点）：
+【强制】接口权限验证；防水平越权（数据归属校验）与垂直越权（角色/权限码）；
+        数据权限制约；数据 ID 随机化；Cookie 安全配置。
+加密（章节要点）：
+【强制】按场景选用对称/非对称加密，加密算法推荐级别见原文；
+        可用 AntKMS 加密服务；安全随机数。
+其余章节（会话安全等）详见 references/security.md。
+
+--------------------------------------------------------------------------------
+11. MySQL 规约（references/mysql.md）
+--------------------------------------------------------------------------------
+建表：
+【强制】表名/字段名小写字母或数字，禁止数字开头，禁止两个下划线中间只出现数字。
+【强制】表必备三字段：id、gmt_create、gmt_modified（时间默认 CURRENT_TIMESTAMP）。
+【强制】小数类型用 decimal，禁止 float/double 存金额/比值。
+【推荐】长度几乎相等的字符串用 CHAR（手机号 11 位等）。
+索引：
+【强制】索引命名：主键 pk_字段名，唯一 uk_字段名，普通 idx_字段名。
+【强制】业务上具有唯一特性的字段（含组合）必须建唯一索引；
+        超过三个表禁止 join，关联字段类型必须一致且建索引。
+【推荐】varchar 字段建索引必须指定长度（前缀索引）。
+SQL：
+【强制】count 用 COUNT(*)，不用 count(列名)/count(常量)；
+        分页先 count，为 0 直接返回；
+        禁止 SELECT *，字段必须明确列出；
+        like 的 % 在左边无法使用索引（'张%' 可用，'%张%' 需评估）；
+        order by 注意索引有序性。
+ORM（MyBatis）：
+【强制】禁止用 resultClass 作为返回参数，必须定义 <resultMap>；
+        sql.xml 参数使用 #{}，禁止 ${}（SQL 注入风险）。
+其他：
+【推荐】字段冗余提高查询性能需保证数据一致；单表超 500 万行或 2GB 再考虑分库分表；
+        延迟关联/子查询优化大分页；开启慢查询日志（long_query_time=2 等）；
+        定期 ANALYZE/OPTIMIZE/CHECK 表。
+【强制】核心业务数据定期备份（建议每日全备 + 每小时增量），并定期验证备份有效性。
+
+--------------------------------------------------------------------------------
+12. 前后端接口规约（references/frontend-backend.md）
+--------------------------------------------------------------------------------
+【强制】API 需明确：协议（生产必须 HTTPS）、路径（仅名词、推荐复数、小写、
+        下划线分隔、禁止 .json/.xml 后缀）、请求方法（GET/POST/PUT/DELETE）、
+        请求内容（URL 不带敏感信息，body 需 Content-Type）、状态码、响应体。
+【强制】列表接口为空返回空数组 [] 或空集合 {}。
+【强制】服务端错误响应必须含四要素：HTTP 状态码、errorCode、errorMessage、
+        用户提示信息（userTip）。
+【强制】前后端 JSON 的 key 一律 lowerCamelCase（errorCode、menuList），
+        禁止 ERRORCODE、error_message、ErrorMessage。
+【强制】超大整数一律用 String 返回，禁止 Long（JS Number 超过 2^53 精度丢失）。
+【强制】URL 传参不超过 2048 字节；body 传参必须控制长度
+        （nginx 默认 1MB、tomcat 默认 2MB）。
+【强制】翻页：用户输入 <1 返回第一页；后端发现超最后一页直接返回最后一页。
+【强制】服务器内部重定向用 forward；外部重定向用 URL 统一代理模块生成。
+【推荐】响应标记是否可缓存（Cache-Control s-maxage）；返回 JSON 而非 XML；
+        时间格式统一 "yyyy-MM-dd HH:mm:ss"（GMT）；接口版本控制在 HTTP 头而非路径。
+
+--------------------------------------------------------------------------------
+13. 工程结构与分层规约（references/project-structure.md）
+--------------------------------------------------------------------------------
+【推荐】MVC 分层：开放接口层 -> Web 层 -> Service 层 -> Manager 层 -> DAO 层 ->
+        外部接口/第三方平台；上层依赖下层，下层不得依赖上层。
+【强制】包名统一小写，点分隔符之间有且仅有一个自然语义英语单词。
+【推荐】按业务模块划分包（user/order/product/payment 等），每模块含
+        api/service/manager/dao/model。
+【推荐】遵循 Maven 标准目录结构；配置文件按环境分离
+        （application.yml / -dev / -test / -prod / -local）。
+【强制】每个类一个文件，文件名与类名一致。
+【强制】接口与实现类分离，实现类放 impl 包（UserService / impl/UserServiceImpl）。
+【强制】上层模块可以依赖下层模块，下层模块不能依赖上层模块。
+
+--------------------------------------------------------------------------------
+14. 单元测试规约（references/unit-testing.md）
+--------------------------------------------------------------------------------
+前置分析：
+【强制】禁止在未阅读被测类（SUT）源码的情况下生成测试；必须理解输入/输出/
+        分支/异常路径与依赖；已存在测试时补充缺失场景而非重写；有测试基类
+        （BaseServiceTest）必须继承；遵循项目已有测试框架与 Mock 选型
+        （>80% 同框架则禁止引入新 Mock 库）。
+默认技术栈（无项目约定时）：JUnit 5 + Mockito（@ExtendWith(MockitoExtension.class)，
+        STRICT_STUBS）+ AssertJ 流式断言。
+范围：
+【强制】必须测：核心业务逻辑、复杂分支、边界条件（null/空/0/负数/极值/超长）、
+        异常流程、数据转换、枚举（全量 @ParameterizedTest + @EnumSource，code<->枚举
+        双向映射、无效值处理、switch 分支完整性 + default、新增枚举值数量断言）。
+        不测：简单 getter/setter、无逻辑 Controller、JDK 原生方法、private 方法。
+结构：
+【强制】测试类命名 {被测类名}Test.java，package 与被测类完全一致；
+        禁止 Test 前缀/复数形式命名（TestUserService、UserServiceTests）。
+【强制】测试方法名体现业务语义（should_applyVipDiscount_when_userMembershipIsGold），
+        禁止仅描述代码行为；每个方法遵循 AAA / Given-When-Then 三段式（注释分隔）。
+Mock：
+【强制】@Mock + @InjectMocks 注入；只 Mock 外部依赖（DAO/RPC/MQ/Redis/HTTP 客户端）；
+        禁止 Mock 值对象（直接 new 真实对象）；禁止 Mock 被测类自身；
+        禁止过度使用 any()，业务相关入参用 eq()/ArgumentCaptor；
+        副作用操作（写库/发消息/RPC）必须 verify 次数与参数。
+断言：
+【强制】必须用断言方法验证结果，禁止 System.out.println；禁止只 assertNotNull，
+        须验证关键字段具体值；集合验证 size + 关键元素；用 AssertJ
+        （assertThatThrownBy 断言异常类与消息）。
+覆盖率（推荐目标）：行覆盖率 >= 80%，分支 >= 70%，方法 >= 90%（JaCoCo）。
+禁止模式：只调用不断言、万能测试（一测一行为）、依赖执行顺序、
+        测试中复制业务逻辑做"验证"（用预计算期望值）。
+数据：buildXxx()/TestDataBuilder 构造数据；数据硬编码在测试内，禁止依赖外部文件；
+        禁止 Random/UUID 随机输入（保证可重复）；禁止静态变量跨方法存状态。
+异常测试：JUnit5 assertThrows/AssertJ assertThatThrownBy；
+        JUnit4 需验证字段时用 @Rule ExpectedException 或 try-catch，不能只用 expected。
+
+--------------------------------------------------------------------------------
+15. 设计规约（references/design-principles.md）
+--------------------------------------------------------------------------------
+设计原则：
+【强制】SOLID：单一职责（一个类只有一个引起变化的原因）；
+        开闭原则（对扩展开放、对修改关闭，用接口 + 策略实现）；
+        里氏替换（子类可替换父类且行为不破坏）；
+        接口隔离（不强迫依赖不使用的方法）；
+        依赖倒置（依赖抽象，不依赖具体实现）。
+设计模式（要点索引）：工厂模式、策略模式、观察者模式、装饰器模式 ——
+        按场景选用，避免过度设计，具体示例见原文。
+架构设计：分层架构设计、领域驱动设计（DDD）、微服务设计原则 —— 见原文。
+接口设计：RESTful API 规范、版本控制 —— 见原文。
+异常设计：统一异常处理（全局异常处理器）、业务异常设计 —— 见原文。
+配置管理：配置分离（多环境）、配置验证 —— 见原文。
+日志设计：日志级别使用规范 —— 见原文。
+
+--------------------------------------------------------------------------------
+16. JDK 21 新特性规约（索引，详情见 references/jdk21-coding-standards/）
+--------------------------------------------------------------------------------
+前提：项目 JDK 版本为 JDK 21 LTS 时按以下规约使用新特性：
+- virtual-threads.md         虚拟线程：I/O 密集型并发、线程优化场景
+- pattern-matching.md        模式匹配：类型判断、Record 解构场景
+- structured-concurrency.md  结构化并发与 Scoped Values：并发任务编排
+- sequenced-collection.md    SequencedCollection：有序集合操作
+- record-switch-enhancements.md Record 与 Switch 增强：Record 模式匹配、Switch 表达式
+- migration-guide.md         JDK 17/11 迁移到 JDK 21 的迁移指南
+注：结构化并发为预览特性（JEP 453），正式启用前需评估。
+
+--------------------------------------------------------------------------------
+17. 规范来源索引（references/ 目录）
+--------------------------------------------------------------------------------
+naming.md            命名规约
+constants.md         常量定义规约
+formatting.md        格式规约
+comments.md          注释规约
+oop.md               OOP 规约
+collections.md       集合处理规约
+control-flow.md      控制语句规约
+datetime.md          日期时间规约
+exception-logging.md 异常与日志规约
+security.md          安全规约
+mysql.md             MySQL 数据库规约
+frontend-backend.md  前后端接口规约
+project-structure.md 工程结构规约
+unit-testing.md      Java 单元测试编写规约
+design-principles.md 设计规约
+jdk21-coding-standards/  JDK 21 新特性系列规约（6 篇）
+
+--------------------------------------------------------------------------------
+附录 A：快速检查清单（编码/评审速查）
+--------------------------------------------------------------------------------
+[ ] 类名大驼峰、方法/变量小驼峰、常量全大写
+[ ] Service/DAO 实现类 Impl 后缀、DO/DTO/VO/BO 后缀正确、无 xxxPOJO
+[ ] 无魔法值、Long 用大写 L、常量按功能归类
+[ ] 4 空格缩进、单行 <=120 字符、运算符/保留字两侧空格、大括号规范
+[ ] 类/方法/属性 javadoc、类含 @author/@date、枚举字段有注释
+[ ] 覆写方法 @Override、equals 与 hashCode 成对、包装类比较用 equals
+[ ] BigDecimal 用 compareTo、String 构造、POJO 用包装类型并覆写 toString
+[ ] 集合：toMap 带 mergeFunction、toArray(new T[0])、foreach 不增删、
+    Map 遍历 entrySet/forEach、初始化指定容量
+[ ] switch 有 default 且 case 终止、if/else 用大括号、String switch 判空
+[ ] 日期 yyyy 小写、禁用 java.sql.* 日期类型、用 JDK8 时间 API
+[ ] 日志用 SLF4J/统一工具类 + 占位符、级别开关、无 System.out、
+    POJO 覆写 toString、异常含现场 + 堆栈
+[ ] 错误码规范（A/B/C + 4 位编号），不直接展示给用户
+[ ] SQL 参数化 #{}、无 SELECT *、无 % 开头 like、分页 count 为 0 短路
+[ ] 输入校验（前后端双重）、XSS 输出编码、SSRF 域名校验、无硬编码密钥
+[ ] 测试：{类名}Test、同包、AAA 结构、业务语义命名、>=1 断言/verify
+[ ] POJO 布尔属性不加 is、DB 字段加 is_、表必备 id/gmt_create/gmt_modified
+
+--------------------------------------------------------------------------------
+文档生成说明
+--------------------------------------------------------------------------------
+本文件由 DTCoder 依据技能 dtazziboot-java-coding-standards（v1.1.0）的
+SKILL.md 与 references/ 规约整理生成，用于团队快速查阅；
+正式评审以各篇原文为准。security.md、unit-testing.md、design-principles.md
+等大文件中的纵深细则章节（如会话安全、异步测试、参数化分节）此处仅给出章节
+要点索引，落地实现时按需打开原文对应章节。
+================================================================================
