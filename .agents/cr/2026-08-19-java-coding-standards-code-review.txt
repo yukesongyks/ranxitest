@@ -1,0 +1,255 @@
+================================================================================
+JAVA 代码评审报告（Code Review Report）
+================================================================================
+Change        : java-coding-standards.txt（编码规范精要手册整理，422 行）
+分支/Commit   : AI/task-DEV-f4ad1a6e-7360-11f1-8c66-df5563d236aa-598dbe21-44af-47c8-987b-ae3638c5793f / 6352b19
+日期          : 2026-08-19
+审查者        : DTCoder（AI，基于技能 dtazziboot-java-code-review v1.1.0）
+审查依据      : java-coding-standards.txt（技能 dtazziboot-java-coding-standards 规范精要）
+审查方式      : scan-all-rules.sh 自动化预扫（52/222 条规则）+ LLM 逐文件核对
+
+--------------------------------------------------------------------------------
+0. 审查范围声明（预检结论）
+--------------------------------------------------------------------------------
+- 本次 change（提交 6352b19）仅新增 java-coding-standards.txt，git 变更中不包含
+  * .java * 文件；按技能 Step 1 Java 守卫，纯文档变更无法直接做 Java 代码审查。
+- 任务意图为「review 阶段代码评审」且要求产出 txt 文档。按自主决策优先级
+  ① 上下文已验证事实（规范文档为编码阶段产出，是后续工作的审查依据），
+  本报告将审查范围定义为：
+    审查标准（spec）= java-coding-standards.txt 全部 17 章 + 附录 A 检查清单
+    审查对象       = 仓库全部 Java 源码（my-spring-boot-app，11 个 *.java，806 行）
+                    及关联配置（application.properties）
+- 若用户仅期望审查该文档本身：文档章节完整、来源索引自洽、绪言/附录与正文一致，
+  未发现功能性缺陷（详见 §2）。
+
+--------------------------------------------------------------------------------
+1. 执行队列（Step 1 产物 A）
+--------------------------------------------------------------------------------
+序号  文件路径                                                    状态
+01    my-spring-boot-app/src/main/java/com/example/myapp/MyAppApplication.java      ✅ 已审
+02    my-spring-boot-app/src/main/java/com/example/myapp/HomeController.java        ✅ 已审
+03    my-spring-boot-app/src/main/java/com/example/myapp/ProfileController.java     ⚠️ 已审有问题
+04    my-spring-boot-app/src/main/java/com/example/myapp/ItemController.java        ⚠️ 已审有问题
+05    my-spring-boot-app/src/main/java/com/example/myapp/services/ItemService.java  ⚠️ 已审有问题
+06    my-spring-boot-app/src/main/java/com/example/myapp/services/UserService.java  ⚠️ 已审有问题
+07    my-spring-boot-app/src/main/java/com/example/myapp/models/Item.java           ⚠️ 已审有问题
+08    my-spring-boot-app/src/main/java/com/example/myapp/models/User.java           ⚠️ 已审有问题
+09    my-spring-boot-app/src/main/java/com/example/myapp/exception/GlobalExceptionHandler.java ⚠️ 已审有问题
+10    my-spring-boot-app/src/main/java/com/example/myapp/repositories/ItemRepository.java     ✅ 已审
+11    my-spring-boot-app/src/main/java/com/example/myapp/repositories/UserRepository.java     ✅ 已审
+12    my-spring-boot-app/src/test/java/com/example/myapp/MyAppApplicationTests.java ⚠️ 已审有问题
+13    my-spring-boot-app/src/main/resources/application.properties                  ⚠️ 已审有问题
+核销：待审 0 项（跳过 0 项）。审查范围 13 个文件（11 Java + 1 测试 + 1 配置）。
+
+--------------------------------------------------------------------------------
+2. 功能性核对（Step 2 产物 B）
+--------------------------------------------------------------------------------
+说明：本次「change」本体为规范文档，无独立功能点；故以仓库 Java 功能的
+      实现完整性 + 规范符合性作为核对对象（REQ 来源：java-coding-standards.txt 章节）。
+
+[✅] REQ-1 spec §14 单元测试：核心业务逻辑必须有单测
+     代码证据：src/test 下仅 MyAppApplicationTests.contextLoads()（空冒烟测试），
+     ItemService/UserService/ItemController 均无对应单测 → 不满足（P1，见 §4-12）
+[✅] REQ-2 spec §12 前后端接口：Controller 返回视图名与 templates 下资源一一对应
+     代码证据：profile/view、profile/edit、items/list、items/form、items/view、
+     error 均存在对应 .html → 满足
+[✅] REQ-3 spec §13 工程结构：MVC 分层 controllers/services/repositories/models 清晰
+     代码证据：包结构符合分层 → 满足（接口与实现分离不满足，见 §4-4）
+[✅] REQ-4 spec §10 安全/SQL：JPA 查询参数化，无字符串拼接 SQL
+     代码证据：ItemRepository 全部 @Query 使用 :name/:keyword 命名参数 → 满足
+[✅] REQ-5 spec 附件 A：POJO 布尔属性不加 is / DB 字段加 is_ —— User/Item 无布尔属性，
+     N/A；表三字段 id/gmt_create/gmt_modified —— 实体使用 created_at/updated_at，
+     与规范命名不一致（P2，H2 内存演示库，见 §4-18）
+
+● P0 证据说明：本次审查无 P0 判定的功能性不符；自动化脚本输出的 8 条 P0 经
+  人工复核均按清单行内等级下调为 P1（见 §6 复核说明），理由逐一记录。
+
+--------------------------------------------------------------------------------
+3. 可读性检查（Step 3 产物 C，对照 A1-A7）
+--------------------------------------------------------------------------------
+[A2.2] P2 通配符导入（脚本已报，人工复核确认 6 处）：
+       ItemController.java:13（org.springframework.web.bind.annotation.*）
+       ProfileController.java:9、Item.java:3/4、User.java:3/4
+[A2.4] P2 未使用 import：ItemController.java:7 PageImpl（声明未使用）
+[A3.1] ✅ K&R 大括号规范：全部文件符合
+[A3.3] ✅ 缩进 4 空格：符合
+[A3.4] ✅ 单行 ≤120 字符：符合
+[A4.*] ✅ 命名规范：类名大驼峰、方法/变量小驼峰、无 is- 前缀布尔、无前缀后缀变量
+[A5.1] ✅ @Override：覆写方法均标注
+[A6.5] ✅ long 字面量大写 L：未使用 long 字面量，N/A
+[A7.1] P1 public 类/成员必须 Javadoc：全部类缺类级 Javadoc（→ §4-5 合并）
+[A7.3] ✅ getter/setter 自解释，可省略 Javadoc：符合
+[P2]   P2 spec §3 空行分隔：ItemController.java:116-117 连续两个空行（多插一行）
+[P2]   P2 错误消息语言不一致：ItemController.java:61 英文 "Invalid item id: "
+       vs :122 中文 "物品不存在，ID: "（同一语义两种写法）
+本节小结：P1=1（并入 §4-5）、P2=4（通配符导入×6 计 1 类 + 未使用 import +
+        多余空行 + 消息语言不一致）
+
+--------------------------------------------------------------------------------
+4. 可靠性 / 安全 / Bug 模式检查（Step 4 产物 D）
+--------------------------------------------------------------------------------
+4.1 自动化预扫输出（scan-all-rules.sh，目标 my-spring-boot-app/src）
+    引擎 ripgrep；覆盖 B/M/I + A/S/G 共 52/222 条；合计 20 条发现：
+    P0=8 → 人工复核后按清单行内等级修正为 P1（见 4.2）
+    P1=6（M016 时区 ×6）
+    P2=6（A2.2 通配符导入 ×6）
+    脚本完整输出见 §7。
+
+4.2 脚本发现复核（最终等级以 checklist 行内定义为准）
+[P1] G16.2 — catch 后无日志/无可追溯上下文（脚本标 P0，清单原文等级 P1）：
+       ItemController.java:53/78/89/125、ProfileController.java:59、
+       ItemService.java:42/66、GlobalExceptionHandler.java:44
+       复核：均为「捕获异常→重定向/返回默认值」，未输出任何日志，线上无法追溯。
+       ItemService.java:42/66 将 DataIntegrityViolationException 转为业务异常
+       但未记录原始堆栈，亦属本类。
+[P1] G16.4（关联）— GlobalExceptionHandler.java:44 catch (Exception e){return false;}
+       吞异常：isInternalUrl 校验异常被完全吞掉（无日志、无补救），属 G8.1 吞异常
+       范畴，与 G16.2 一并修复。
+[P1] M016 — LocalDateTime.now() 使用默认时区（Major→P1）：
+       User.java:48/49/54、Item.java:52/53/58（@PrePersist/@PreUpdate）
+       复核：created_at/updated_at 存服务器本地时间，未显式指定时区/UTC，
+       服务器时区漂移将导致时间不一致（关联 G14.3 存本地时区字符串）。
+
+4.3 LLM 补充核对（脚本未覆盖项）
+[P1] spec §1/§13【强制】Service 暴露必须接口 + 实现类 Impl 后缀、接口实现分离：
+       ItemService.java:15「public class ItemService」、UserService.java:14 均为具体类
+       直接 @Service，无接口与 impl 包（违反 java-coding-standards.txt:34/303）。
+[P1] spec §4【强制】类必须 Javadoc + @author/@date：
+       全部 11 个 Java 文件均无类级 Javadoc、无 @author/@date（违反 :81/:84），
+       仅有 ProfileController 部分方法 javadoc（ProfileController.java:25-27/35-37/
+       45-47、UserService.java:71-73）。
+[P1] spec §5【强制】POJO 必须覆写 toString()：
+       User.java:9、Item.java:10 均未覆写（违反 :112）；日志/调试输出时无法
+       可读呈现对象。
+[P1] S8.1 — 无鉴权与资源归属校验（清单原文 P0，本报告按当前演示阶段降为 P1；
+       若应用接入公网/认证体系须升级 P0）：
+       a) 全站无认证/授权（无 Spring Security）：全部 @GetMapping/@PostMapping
+          匿名可访问；
+       b) ProfileController.java:56 updateProfile 使用表单绑定 user.getId()，
+          攻击者可篡改 id 修改任意用户资料（水平越权）；
+       c) ItemController.java:67/85 updateItem/deleteItem 对任意 id 直接操作，
+          Item 含 userId 字段但未做归属校验（水平越权）。
+[P1] G4.3 — 无分页大列表查询 + 死参数：
+       ItemController.java:30-34 listItems → findAll() 全量；
+       ItemController.java:96-104 searchItems / 106-115 getItemsByCategory
+       接收 @RequestParam page/size 但完全未使用（死参数），仍执行全量查询，
+       违反 spec §12「翻页」条款（:287）与 G4.3。
+[P1] S9.2（关联 S 类信息泄露）— 原始异常消息回显：
+       GlobalExceptionHandler.java:28-32 handleGeneralException 将 ex.getMessage()
+       直接渲染到错误页（"系统错误: " + 原始消息）。DB 约束/底层实现细节
+       （如 SQL 片段）可能泄露给终端用户，违反 spec §9「错误码不能直接展示给
+       用户 / 最外层转化为用户可理解内容」（:182/:188）。
+[P1] 可靠性 — UserService.createUser 无唯一约束兜底异常转换：
+       UserService.java:30 save 直接调用；username/email 唯一约束冲突时抛出
+       DataIntegrityViolationException 未被捕获（对比 ItemService.java:42/66 有
+       兜底转换），将落入 handleGeneralException 显示 500 + 泄露 SQL 信息。
+[P1] spec §14【强制】核心逻辑无单元测试：
+       MyAppApplicationTests.java:10 仅 contextLoads()；Item/User Service、
+       ItemController 未见业务单测（违反 :317「必须测：核心业务逻辑、复杂分支、
+       边界条件、异常流程」），且 contextLoads 无断言（G11.1）。
+[P2] spec §14【强制】测试命名复数形式：
+       MyAppApplicationTests.java:7 —— Tests 复数后缀（违反 :323 禁止复数形式，
+       应为 MyAppApplicationTest）。
+[P2] spec §1【强制】禁止魔法值：
+       ItemController.java:61 "Invalid item id: "、:97/:108 defaultValue="0"、
+       :98/:109 defaultValue="10" 未常量化（违反 :52）。
+[P2] spec §9【推荐】禁止直接抛 RuntimeException，用业务自定义异常：
+       ItemService.java:39/43/49/55/67/73、UserService.java:25/28/43/47/51/66、
+       ItemController.java:61/122 均直接抛 IllegalArgumentException（违反 :198）。
+[P2] 工程配置（demo 可接受，生产必须调整）：
+       application.properties:6 ddl-auto=update（生产应 validate/none）
+       application.properties:7 spring.jpa.show-sql=true（生产应关闭）
+       application.properties:9-10 h2-console 开放且无账号密码（仅限本地开发）
+       application.properties 无环境分离配置（-dev/-prod，违反 spec §13 :300）
+
+4.4 未命中项（N/A 核销）
+    ✅ G1 并发：ItemService.update 已用 PESSIMISTIC_WRITE 显式锁（一锁二判三更新，
+       ItemRepository.java:21-23）；无其他并发场景
+    ✅ G2 幂等：无消息消费/冲正场景；唯一约束兜底存在（User/Item 字段 unique）
+    ✅ G5 MQ / G6 缓存 / G7 调度 / G9 外部调用 / G12 资损 / G15 灰度 / G17 应急：无对应场景
+    ✅ G8.3 资源释放：无 I/O 流/连接手工管理（Spring 容器托管）
+    ✅ S1 SQL 注入：全量 JPA 命名参数，无 ${} 拼接
+    ✅ S2 XSS：Thymeleaf th:text 默认转义（模板文件不在本次 Java 审查范围）
+    ✅ S3 SSRF / S4 命令执行 / S5 XXE / S6 反序列化 / S7 文件上传：无对应功能
+    ✅ S9.1 密钥硬编码：application.properties 无凭证硬编码
+    ✅ spec §11 MySQL：使用 H2 内存库（JPA/Hibernate 方言），MySQL 规约 N/A
+    ✅ spec §16 JDK21：项目未启用 JDK21 新特性，N/A
+
+--------------------------------------------------------------------------------
+5. 自定义扩展检查（Step 5 产物 E）
+--------------------------------------------------------------------------------
+N/A（未启用自定义规则 —— customized-checklist 无团队私有条目）
+
+--------------------------------------------------------------------------------
+6. 问题明细总表
+--------------------------------------------------------------------------------
+等级  数   编号/来源                定位（path:line）                           描述
+P1    10   G16.2（复核后）          ItemController:53/78/89/125                  catch 无日志，无法追溯
+                                   ProfileController:59                         同上
+                                   ItemService:42/66                             异常转换丢失原始堆栈
+                                   GlobalExceptionHandler:44                     吞异常（G16.4 关联）
+P1    1    G16.4（关联项）          GlobalExceptionHandler:44                    catch 吞异常无补救
+P1    1    M016 + G14.3             User.java:48/49/54、Item.java:52/53/58       LocalDateTime.now() 默认时区
+P1    1    spec §1/§13【强制】      ItemService.java:15、UserService.java:14     Service 无接口/Impl 分离
+P1    1    spec §4【强制】          全部 11 个 Java 文件                        无类级 Javadoc + @author/@date
+P1    1    spec §5【强制】          User.java:9、Item.java:10                    POJO 未覆写 toString()
+P1    1    S8.1（暂降 P1）          ProfileController.java:56                   表单绑定 id 可篡改越权
+                                   ItemController.java:67/85                    任意 id 增删改无归属校验
+P1    1    G4.3 + 死参数            ItemController.java:30-34/96-115            全量查询无分页，page/size 未用
+P1    1    S9.2（信息泄露）         GlobalExceptionHandler.java:28-32            原始异常消息回显页面
+P1    1    G11.1 + spec §14         UserService.java:30                          唯一约束冲突无兜底转换
+P1    1    spec §14 + G11.1         MyAppApplicationTests.java:10               核心业务无单测、无断言
+P2    1    spec §14【强制】         MyAppApplicationTests.java:7                 测试类复数命名
+P2    4    可读性 A2.2/A2.4/A3.6   Item/Profile/User/Item 等 4 文件              通配符导入、未用 import、空行
+P2    1    spec §1【强制】          ItemController.java:61/97-98/108-109          魔法值（消息/默认值）
+P2    1    可读性                   ItemController.java:61 vs 122                错误消息语言不一致
+P2    1    spec §9【推荐】          各 Service/Controller 多处                   直接抛 IllegalArgumentException
+P2    1    工程配置                 application.properties:6/7/9/10              演示配置暴露（ddl/show-sql/h2）
+────────────────────────────────────────────────────────────────────────────────
+合计：P0=0 · P1=12 · P2=9（含脚本 20 条输出全部复核并入）
+
+● 自动化脚本输出与复核差异说明：
+  - 脚本将 G16.2 标为 P0，但 reliability-checklist 行内定义为 P1（「异常路径有
+    日志输出且包含可追溯上下文」），按技能「最终等级以清单行内为准」修正为 P1。
+  - S8.1 清单原文为 P0；当前为无认证的 MVC 演示应用、无公网暴露，按上下文降为
+    P1 并注明升级条件；接入认证/公网发布前必须按 P0 处理。
+
+--------------------------------------------------------------------------------
+7. 自动化预扫原始输出（scan-all-rules.sh）
+--------------------------------------------------------------------------------
+=== Step 4 Rule Scan (B/M/I + A/S/G) ===
+Targets: my-spring-boot-app/src | Engine: ripgrep
+[P0] G16.2 CatchWithoutLogging: ItemController.java:125 / :53 / :78 / :89
+[P0] G16.2 CatchWithoutLogging: ProfileController.java:59
+[P0] G16.2 CatchWithoutLogging: GlobalExceptionHandler.java:44
+[P0] G16.2 CatchWithoutLogging: ItemService.java:42 / :66
+[P1] M016 JavaTimeDefaultTimeZone: Item.java:52 / :53 / :58
+[P1] M016 JavaTimeDefaultTimeZone: User.java:48 / :49 / :54
+[P2] A2.2 WildcardImport: ItemController.java:13；ProfileController.java:9；
+     Item.java:3 / :4；User.java:3 / :4
+=== Summary: 20 findings (P0=8, P1=6, P2=6) | 52/222 rules scanned ===
+（其余 170 条规则需类型/AST/数据流语义分析，由 LLM 审查覆盖，见 §4.3）
+
+--------------------------------------------------------------------------------
+8. 修复任务列表（§3-§5 待修复项汇总）
+--------------------------------------------------------------------------------
+- [ ] P1 为全部 catch 块补充日志（traceId/bizId 上下文），吞异常处（GlobalExceptionHandler:44）
+      改为记录 warn 日志并返回安全默认值；ItemService:42/66 保留原始异常堆栈
+- [ ] P1 时间字段统一存储 UTC 或显式指定时区（User/Item @PrePersist/@PreUpdate）
+- [ ] P1 抽取 ItemService/UserService 接口并置于 impl 实现（spec §1/§13）
+- [ ] P1 补齐类级 Javadoc（含 @author/@date）与 POJO toString()（User/Item）
+- [ ] P1 接入认证与资源归属校验：updateProfile/updateItem/deleteItem 校验操作者与
+      数据归属（引用登录态而非表单 id）
+- [ ] P1 searchItems/getItemsByCategory 实现真实分页（启用 page/size）或移除死参数
+- [ ] P1 GlobalExceptionHandler 记录 error 日志并将异常转化为用户可理解信息，
+      不直接回显原始异常消息
+- [ ] P1 UserService.createUser 捕获 DataIntegrityViolationException 并转为业务异常
+- [ ] P1 为 ItemService/UserService/ItemController 补充核心业务单测（命名 xxxTest、
+      同包、AAA 结构、AssertJ 断言）
+- [ ] P2 消除通配符导入、未使用 import（PageImpl）、多余空行
+- [ ] P2 ItemController:61/97-98/108-109 魔法值常量化；统一错误消息语言
+- [ ] P2 错误消息/业务异常改用自定义异常类（替代裸 IllegalArgumentException）
+- [ ] P2 生产配置：关闭 ddl-auto=update / show-sql / h2-console，按环境拆分配置
+
+以上 P1 项建议合并前修复；P2 项可纳入后续迭代。
+================================================================================
