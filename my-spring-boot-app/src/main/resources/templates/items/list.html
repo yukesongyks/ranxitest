@@ -198,6 +198,7 @@
         </div>
         <div style="display:flex;gap:10px;align-items:center;">
             <a class="btn btn-secondary" th:href="@{/profile}">个人中心</a>
+            <a class="btn btn-secondary" th:if="${docgenExportEnabled}" th:href="@{/items/export.txt}">导出TXT</a>
             <a class="btn btn-primary" th:href="@{/items/new}">+ 新增物品</a>
         </div>
     </div>
