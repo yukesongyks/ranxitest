@@ -1,5 +1,6 @@
 package com.example.myapp.controllers;
 
+import com.example.myapp.docgen.DocgenExportProperties;
 import com.example.myapp.models.Item;
 import com.example.myapp.services.ItemService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,10 +22,22 @@ import java.util.List;
 public class ItemController {
 
     private final ItemService itemService;
+    private final DocgenExportProperties docgenExportProperties;
 
     @Autowired
-    public ItemController(ItemService itemService) {
+    public ItemController(ItemService itemService, DocgenExportProperties docgenExportProperties) {
         this.itemService = itemService;
+        this.docgenExportProperties = docgenExportProperties;
+    }
+
+    /**
+     * TXT 导出功能开关状态（供页面控制「导出TXT」入口显隐）。
+     *
+     * @return 导出功能是否开启
+     */
+    @ModelAttribute("docgenExportEnabled")
+    public boolean docgenExportEnabled() {
+        return docgenExportProperties.isEnabled();
     }
 
     @GetMapping
