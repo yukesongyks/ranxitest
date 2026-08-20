@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -23,8 +24,14 @@ public class TxtExportService {
     private static final DateTimeFormatter FILE_NAME_TIME_FORMATTER =
             DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
 
+    /** 文件名时间戳使用的固定时区（东八区），保证文件名时间可预期。 */
+    private static final ZoneId FILE_NAME_TIME_ZONE = ZoneId.of("Asia/Shanghai");
+
     /** 注入转义时替换的字符。 */
     private static final char ESCAPE_REPLACEMENT = ' ';
+
+    /** 文件名前缀白名单格式（仅字母/数字/下划线，防路径穿越）。 */
+    private static final String PREFIX_WHITELIST_PATTERN = "[a-zA-Z0-9_]+";
 
     /**
      * 将行列表数据生成为 TXT 字节流。
@@ -36,6 +43,9 @@ public class TxtExportService {
     public byte[] exportTxt(List<TxtRow> rows, TxtExportOptions options) {
         if (rows == null) {
             throw new DocgenExportException(DocgenErrorCode.INVALID_PARAM, "导出数据不能为空");
+        }
+        if (options == null) {
+            throw new DocgenExportException(DocgenErrorCode.INVALID_PARAM, "导出选项不能为空");
         }
         checkLimit(rows, options);
 
@@ -63,7 +73,11 @@ public class TxtExportService {
      * @return 文件名，如 items-20260820-120000.txt
      */
     public String buildFileName(String prefix) {
-        String timestamp = LocalDateTime.now().format(FILE_NAME_TIME_FORMATTER);
+        if (prefix == null || !prefix.matches(PREFIX_WHITELIST_PATTERN)) {
+            throw new DocgenExportException(DocgenErrorCode.INVALID_PARAM,
+                    "文件名前缀非法，仅允许字母/数字/下划线");
+        }
+        String timestamp = LocalDateTime.now(FILE_NAME_TIME_ZONE).format(FILE_NAME_TIME_FORMATTER);
         return prefix + "-" + timestamp + ".txt";
     }
 

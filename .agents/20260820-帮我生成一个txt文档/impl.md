@@ -113,9 +113,29 @@ mvn test -Dtest=TxtExportServiceTest,ItemExportServiceTest,ItemExportControllerT
 
 ## 7. 已知限制与缺失条件
 
-- 单次生成超时（A07 `timeout-ms`）仅提供配置项，未实现异步超时中断（demo 数据量级下为纯内存计算，风险低）
+- 单次生成超时（A07 `timeout-ms`）以「生成完成后校验耗时」的方式兜底（超过阈值返回 DOCGEN_001），非异步强中断；demo 数据量级下为纯内存计算，风险低
 - O01 限流（A08：60 次/分钟/IP）与灰度引流（A09）未实现（属于假设待确认项，非 P0/P1 功能点）
 - `data` 出参失败时为 null，成功时直接返回文件流（符合系分约定）
+
+## 8. 代码评审问题修复（review round 1）
+
+> 依据 `.agents/20260820-帮我生成一个txt文档/cr_report.md`（P0×1 / P1×1 / P2×8）修复；评审日期 2026-08-20。
+
+| 等级 | ID | 修复内容 | 涉及文件 | 状态 |
+|------|----|----------|----------|:----:|
+| P0 | G16.1 | W01/O01 补监控埋点（请求数/成功数/失败数按错误码/耗时/行数/体积）与请求结果摘要日志（含行数/耗时/文件大小），对齐 design §6.5/§7.1 | `DocgenExportMetrics.java`（新增）、`ItemExportController.java` | ✅ |
+| P1 | M016 | `buildFileName` 时间戳改用显式时区 `Asia/Shanghai`（`LocalDateTime.now(FILE_NAME_TIME_ZONE)`） | `TxtExportService.java` | ✅ |
+| P2 | A3.4 | 拆分超 120 字符断言行（`ItemExportControllerTest:63` 及修复新增日志行） | `ItemExportControllerTest.java`、`ItemExportController.java` | ✅ |
+| P2 | A07 | `timeout-ms` 生效：生成耗时超阈值 → DOCGEN_001（含 error 日志） | `ItemExportController.java`（`ensureWithinTimeout`） | ✅ |
+| P2 | O01 msg | 参数失败 msg 对齐设计示例格式 `DOCGEN_003 参数非法：…` | `ItemExportController.java` | ✅ |
+| P2 | catch 过宽 | `ItemExportService.buildRows()` 收窄 catch 至仅包裹 `findAll()` 查询，编程错误不再被包装为 DOCGEN_001 | `ItemExportService.java` | ✅ |
+| P2 | G11.3 | `exportTxt` 增加 `options` 非空校验；`TxtExportOptions.setHeaders` 防御性拷贝；`buildFileName` 前缀白名单校验（`[a-zA-Z0-9_]+`，防路径穿越） | `TxtExportService.java`、`TxtExportOptions.java` | ✅ |
+| P2 | G11.2 | 补测试：O01 limit 截断、GBK 成功、W01 超限/数据源失败（rethrow）、超时兜底、null options、非法前缀 | `ItemExportControllerTest.java`、`TxtExportServiceTest.java` | ✅ |
+| P2 | 既有代码 | `ItemController.java` 通配 import / catch 无日志 —— 超本变更范围，建议单独任务处理 | - | ⏭️ |
+
+**修复后测试规模**：TxtExportServiceTest 6→8 例、ItemExportServiceTest 3 例（不变）、ItemExportControllerTest 6→11 例。
+
+**L2 动态验证**：环境无 JDK/Maven（`java`/`javac`/`mvn` 不可用），编译与单测跳过，已按 L1 静态审查（结构/行宽/命名/类型一致性）复核通过，待人工验证命令见 §6。
 
 ## ✅ 各阶段完成总结
 

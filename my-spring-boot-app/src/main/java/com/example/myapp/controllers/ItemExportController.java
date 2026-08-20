@@ -2,6 +2,7 @@ package com.example.myapp.controllers;
 
 import com.example.myapp.docgen.DocgenErrorCode;
 import com.example.myapp.docgen.DocgenExportException;
+import com.example.myapp.docgen.DocgenExportMetrics;
 import com.example.myapp.docgen.DocgenExportProperties;
 import com.example.myapp.docgen.TxtExportOptions;
 import com.example.myapp.docgen.TxtExportService;
@@ -52,6 +53,7 @@ public class ItemExportController {
     private final ItemExportService itemExportService;
     private final TxtExportService txtExportService;
     private final DocgenExportProperties docgenExportProperties;
+    private final DocgenExportMetrics docgenExportMetrics;
 
     /**
      * 构造控制器。
@@ -59,13 +61,16 @@ public class ItemExportController {
      * @param itemExportService      物品行数据组装服务
      * @param txtExportService       通用 TXT 生成服务
      * @param docgenExportProperties 导出功能配置
+     * @param docgenExportMetrics    导出监控埋点
      */
     public ItemExportController(ItemExportService itemExportService,
                                 TxtExportService txtExportService,
-                                DocgenExportProperties docgenExportProperties) {
+                                DocgenExportProperties docgenExportProperties,
+                                DocgenExportMetrics docgenExportMetrics) {
         this.itemExportService = itemExportService;
         this.txtExportService = txtExportService;
         this.docgenExportProperties = docgenExportProperties;
+        this.docgenExportMetrics = docgenExportMetrics;
     }
 
     /**
@@ -78,14 +83,23 @@ public class ItemExportController {
         if (!docgenExportProperties.isEnabled()) {
             return maintenanceResponse();
         }
+        long start = System.currentTimeMillis();
+        docgenExportMetrics.recordRequest();
         try {
             List<TxtRow> rows = itemExportService.buildRows();
             TxtExportOptions options = new TxtExportOptions();
             options.setHeaders(ItemExportService.HEADERS);
             byte[] content = txtExportService.exportTxt(rows, options);
-            return attachmentResponse(content, txtExportService.buildFileName(ItemExportService.FILE_NAME_PREFIX),
-                    StandardCharsets.UTF_8);
+            ensureWithinTimeout(start, "物品页面导出");
+            ResponseEntity<byte[]> response = attachmentResponse(content,
+                    txtExportService.buildFileName(ItemExportService.FILE_NAME_PREFIX), StandardCharsets.UTF_8);
+            long elapsedMs = elapsedMs(start);
+            docgenExportMetrics.recordSuccess(elapsedMs, rows.size(), content.length);
+            log.info("物品页面导出成功, rows={}, elapsedMs={}, bytes={}",
+                    rows.size(), elapsedMs, content.length);
+            return response;
         } catch (DocgenExportException e) {
+            docgenExportMetrics.recordFailure(e.getErrorCode());
             log.error("物品页面导出失败, code={}", e.getErrorCode(), e);
             throw e;
         }
@@ -107,14 +121,16 @@ public class ItemExportController {
         Charset charset = SUPPORTED_ENCODINGS.get(encoding == null ? "utf-8" : encoding.toLowerCase());
         if (charset == null) {
             return errorResponse(DocgenErrorCode.INVALID_PARAM,
-                    "encoding 不支持，仅支持 utf-8/gbk");
+                    "参数非法：encoding 不支持，仅支持 utf-8/gbk");
         }
         int effectiveLimit = limit == null ? DEFAULT_LIMIT : limit;
         if (effectiveLimit < 1 || effectiveLimit > MAX_LIMIT) {
             return errorResponse(DocgenErrorCode.INVALID_PARAM,
-                    "limit 超出最大限制 " + MAX_LIMIT);
+                    "参数非法：limit 超出最大限制 " + MAX_LIMIT);
         }
         int maxRows = Math.min(effectiveLimit, TxtExportOptions.DEFAULT_MAX_ROWS);
+        long start = System.currentTimeMillis();
+        docgenExportMetrics.recordRequest();
         try {
             List<TxtRow> rows = itemExportService.buildRows();
             if (rows.size() > maxRows) {
@@ -125,11 +141,37 @@ public class ItemExportController {
             options.setMaxRows(maxRows);
             options.setCharset(charset);
             byte[] content = txtExportService.exportTxt(rows, options);
-            return attachmentResponse(content, txtExportService.buildFileName(ItemExportService.FILE_NAME_PREFIX),
-                    charset);
+            ensureWithinTimeout(start, "物品 OpenAPI 导出");
+            ResponseEntity<byte[]> response = attachmentResponse(content,
+                    txtExportService.buildFileName(ItemExportService.FILE_NAME_PREFIX), charset);
+            long elapsedMs = elapsedMs(start);
+            docgenExportMetrics.recordSuccess(elapsedMs, rows.size(), content.length);
+            log.info("物品 OpenAPI 导出成功, rows={}, elapsedMs={}, bytes={}",
+                    rows.size(), elapsedMs, content.length);
+            return response;
         } catch (DocgenExportException e) {
+            docgenExportMetrics.recordFailure(e.getErrorCode());
             log.error("物品 OpenAPI 导出失败, code={}", e.getErrorCode(), e);
             return errorResponse(e.getErrorCode(), e.getMessage());
+        }
+    }
+
+    private long elapsedMs(long start) {
+        return System.currentTimeMillis() - start;
+    }
+
+    /**
+     * 生成耗时兜底：超过配置阈值（docgen.export.timeout-ms）视为超时，返回 DOCGEN_001。
+     *
+     * @param start      开始时间戳
+     * @param sceneName  场景名（日志用）
+     */
+    private void ensureWithinTimeout(long start, String sceneName) {
+        long elapsedMs = elapsedMs(start);
+        if (elapsedMs > docgenExportProperties.getTimeoutMs()) {
+            log.error("{}超时, elapsedMs={}, timeoutMs={}", sceneName, elapsedMs,
+                    docgenExportProperties.getTimeoutMs());
+            throw new DocgenExportException(DocgenErrorCode.DATA_ASSEMBLY_FAILED, "导出超时，请稍后重试");
         }
     }
 

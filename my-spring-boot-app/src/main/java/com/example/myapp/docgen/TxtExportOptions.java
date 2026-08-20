@@ -38,7 +38,7 @@ public class TxtExportOptions {
     }
 
     public void setHeaders(List<String> headers) {
-        this.headers = headers;
+        this.headers = headers == null ? new ArrayList<>() : new ArrayList<>(headers);
     }
 
     public String getSeparator() {

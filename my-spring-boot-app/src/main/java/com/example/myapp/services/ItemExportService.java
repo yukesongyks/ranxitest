@@ -48,22 +48,23 @@ public class ItemExportService {
      * @return 行数据列表（不含表头）
      */
     public List<TxtRow> buildRows() {
+        List<Item> items;
         try {
-            List<Item> items = itemRepository.findAll();
-            List<TxtRow> rows = new ArrayList<>(items.size());
-            for (Item item : items) {
-                rows.add(new TxtRow(Arrays.asList(
-                        String.valueOf(item.getId()),
-                        item.getName(),
-                        item.getDescription() == null ? "" : item.getDescription(),
-                        formatPrice(item.getPrice()))));
-            }
-            return rows;
+            items = itemRepository.findAll();
         } catch (RuntimeException e) {
-            log.error("物品导出数据组装失败", e);
+            log.error("物品导出数据查询失败", e);
             throw new DocgenExportException(DocgenErrorCode.DATA_ASSEMBLY_FAILED,
                     DocgenErrorCode.DATA_ASSEMBLY_FAILED.getDefaultMessage());
         }
+        List<TxtRow> rows = new ArrayList<>(items.size());
+        for (Item item : items) {
+            rows.add(new TxtRow(Arrays.asList(
+                    String.valueOf(item.getId()),
+                    item.getName(),
+                    item.getDescription() == null ? "" : item.getDescription(),
+                    formatPrice(item.getPrice()))));
+        }
+        return rows;
     }
 
     private String formatPrice(BigDecimal price) {

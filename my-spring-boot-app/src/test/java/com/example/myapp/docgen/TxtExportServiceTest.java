@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,7 +25,7 @@ class TxtExportServiceTest {
         // Arrange
         TxtExportOptions options = new TxtExportOptions();
         options.setHeaders(Arrays.asList("ID", "名称", "描述", "价格"));
-        java.util.List<TxtRow> rows = Arrays.asList(
+        List<TxtRow> rows = Arrays.asList(
                 new TxtRow(Arrays.asList("1", "苹果", "红富士", "5.50")),
                 new TxtRow(Arrays.asList("2", "香蕉", "进口香蕉", "3.20")));
 
@@ -44,7 +45,7 @@ class TxtExportServiceTest {
         // Arrange
         TxtExportOptions options = new TxtExportOptions();
         options.setHeaders(Collections.singletonList("描述"));
-        java.util.List<TxtRow> rows = Collections.singletonList(
+        List<TxtRow> rows = Collections.singletonList(
                 new TxtRow(Collections.singletonList("第一行\n第二行\t制表\r回车")));
 
         // Act
@@ -61,7 +62,7 @@ class TxtExportServiceTest {
         TxtExportOptions options = new TxtExportOptions();
         options.setHeaders(Collections.singletonList("ID"));
         options.setMaxRows(1);
-        java.util.List<TxtRow> rows = Arrays.asList(
+        List<TxtRow> rows = Arrays.asList(
                 new TxtRow(Collections.singletonList("1")),
                 new TxtRow(Collections.singletonList("2")));
 
@@ -78,7 +79,7 @@ class TxtExportServiceTest {
         TxtExportOptions options = new TxtExportOptions();
         options.setHeaders(Collections.singletonList("ID"));
         options.setMaxBytes(10L);
-        java.util.List<TxtRow> rows = Collections.singletonList(
+        List<TxtRow> rows = Collections.singletonList(
                 new TxtRow(Collections.singletonList("0123456789-very-long")));
 
         // Act & Assert
@@ -102,6 +103,15 @@ class TxtExportServiceTest {
         assertThat(content).isEqualTo("ID\t名称\r\n共 0 条记录\r\n");
     }
 
+    @Test
+    void should_throwException_when_optionsNull() {
+        // Act & Assert
+        assertThatThrownBy(() -> txtExportService.exportTxt(Collections.emptyList(), null))
+                .isInstanceOf(DocgenExportException.class)
+                .extracting(e -> ((DocgenExportException) e).getErrorCode())
+                .isEqualTo("DOCGEN_003");
+    }
+
     // ==================== buildFileName 测试 ====================
 
     @Test
@@ -111,5 +121,14 @@ class TxtExportServiceTest {
 
         // Assert
         assertThat(fileName).matches(Pattern.quote("items-") + "\\d{8}-\\d{6}\\.txt");
+    }
+
+    @Test
+    void should_throwException_when_prefixIllegal() {
+        // Act & Assert
+        assertThatThrownBy(() -> txtExportService.buildFileName("../evil"))
+                .isInstanceOf(DocgenExportException.class)
+                .extracting(e -> ((DocgenExportException) e).getErrorCode())
+                .isEqualTo("DOCGEN_003");
     }
 }
