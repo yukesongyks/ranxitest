@@ -1,0 +1,29 @@
+{
+  "type": "count",
+  "task": "DEV-72ed08cb-78db-11f1-8f3f-75954cb1c56f-20d91b6b-5dd2-4222-8e6c-fbf4fa7a2ecf",
+  "stage": "代码审查",
+  "skill": "dtazziboot-java-coding-standards",
+  "requirement": "实现一个冒泡排序",
+  "designDoc": ".agents/system-analysis/2026-09-15-冒泡排序-design.md",
+  "changedFiles": [
+    "my-spring-boot-app/src/main/java/com/example/myapp/sort/SortOrder.java",
+    "my-spring-boot-app/src/main/java/com/example/myapp/sort/SortRequest.java",
+    "my-spring-boot-app/src/main/java/com/example/myapp/sort/SortResult.java",
+    "my-spring-boot-app/src/main/java/com/example/myapp/sort/SortResponse.java",
+    "my-spring-boot-app/src/main/java/com/example/myapp/sort/SortService.java",
+    "my-spring-boot-app/src/main/java/com/example/myapp/sort/SortController.java",
+    "my-spring-boot-app/src/main/java/com/example/myapp/sort/SortConstants.java",
+    "my-spring-boot-app/src/main/java/com/example/myapp/sort/SortException.java",
+    "my-spring-boot-app/src/main/java/com/example/myapp/sort/SortServiceImpl.java",
+    "my-spring-boot-app/src/test/java/com/example/myapp/sort/SortServiceTest.java"
+  ],
+  "fileCount": 10,
+  "count": 5,
+  "issues": [
+    {"id": 1, "level": "强制", "dimension": "异常", "file": "SortConstants.java", "desc": "错误码来源字母使用'S'（S0001~S0004），但异常日志规约§1.2明确定义错误来源仅限A/B/C。参数校验类错误属用户侧错误，应使用'A'前缀（A0001~A0004）"},
+    {"id": 2, "level": "强制", "dimension": "OOP", "file": "SortResult.java", "desc": "POJO类属性count使用基本类型int，OOP规约§5.1要求POJO类属性必须使用包装数据类型，应为Integer"},
+    {"id": 3, "level": "强制", "dimension": "日志", "file": "SortController.java,SortServiceImpl.java", "desc": "log.info()和log.debug()调用未配合isInfoEnabled()/isDebugEnabled()级别开关判断，违反异常日志规约§3.5。涉及SortController行46/89，SortServiceImpl行52/74"},
+    {"id": 4, "level": "推荐", "dimension": "安全", "file": "SortController.java,SortRequest.java", "desc": "Bean Validation（@NotNull/@Size+@Valid）与Controller手动校验重复，@Valid校验失败时返回Spring默认400格式而非统一{code,msg,data}格式，响应格式不一致"},
+    {"id": 5, "level": "推荐", "dimension": "单测", "file": "SortServiceTest.java", "desc": "测试方法命名使用bubbleSort_asc_normalCase风格，不符合单元测试规约§3.2推荐的should_xxx_when_yyy或test_xxx_when_yyy命名风格"}
+  ]
+}
