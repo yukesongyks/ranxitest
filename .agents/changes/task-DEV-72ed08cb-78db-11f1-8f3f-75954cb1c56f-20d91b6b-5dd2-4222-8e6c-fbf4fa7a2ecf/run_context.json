@@ -1,8 +1,8 @@
 {
   "type": "count",
   "task": "DEV-72ed08cb-78db-11f1-8f3f-75954cb1c56f-20d91b6b-5dd2-4222-8e6c-fbf4fa7a2ecf",
-  "stage": "编码实现",
-  "skill": "writing-skills",
+  "stage": "代码审查",
+  "skill": "dtazziboot-java-coding-standards",
   "requirement": "实现一个冒泡排序",
   "designDoc": ".agents/system-analysis/2026-09-15-冒泡排序-design.md",
   "changedFiles": [
@@ -15,5 +15,17 @@
     "my-spring-boot-app/src/test/java/com/example/myapp/sort/SortServiceTest.java"
   ],
   "fileCount": 7,
-  "count": 10
+  "count": 10,
+  "issues": [
+    {"id": 1, "level": "强制", "dimension": "命名", "file": "SortService.java", "desc": "Service未使用接口+Impl实现模式，应为SortService接口+SortServiceImpl实现类"},
+    {"id": 2, "level": "强制", "dimension": "常量", "file": "SortController.java,SortResponse.java", "desc": "魔法值未定义为常量：错误码SORT_001~004、成功码OK/SUCCESS"},
+    {"id": 3, "level": "强制", "dimension": "注释", "file": "SortOrder.java", "desc": "枚举字段ASC/DESC缺少Javadoc注释"},
+    {"id": 4, "level": "强制", "dimension": "注释", "file": "全部7个类", "desc": "类缺少@author创建者和@date创建日期"},
+    {"id": 5, "level": "强制", "dimension": "异常", "file": "SortController.java", "desc": "错误码格式不符合规范，应为来源字母+4位数字共5位(如A0001)"},
+    {"id": 6, "level": "强制", "dimension": "异常", "file": "SortRequest.java,SortResponse.java,SortResult.java", "desc": "POJO类未覆写toString()方法"},
+    {"id": 7, "level": "推荐", "dimension": "异常", "file": "SortService.java", "desc": "直接抛出IllegalArgumentException，未使用自定义业务异常"},
+    {"id": 8, "level": "推荐", "dimension": "异常", "file": "SortController.java,SortService.java", "desc": "缺少SLF4J日志记录，设计文档要求记录请求量/方向/耗时"},
+    {"id": 9, "level": "推荐", "dimension": "安全", "file": "SortController.java,SortRequest.java", "desc": "@RequestBody未配合@Valid，SortRequest无Bean Validation注解"},
+    {"id": 10, "level": "推荐", "dimension": "单测", "file": "SortServiceTest.java", "desc": "缺少null入参场景测试，测试方法缺少AAA注释分隔"}
+  ]
 }
