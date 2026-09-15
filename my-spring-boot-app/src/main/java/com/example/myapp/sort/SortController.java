@@ -1,11 +1,14 @@
 package com.example.myapp.sort;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -13,10 +16,15 @@ import java.util.List;
  * <p>
  * 提供 POST /api/sort/bubble 接口，接收待排序整数数组及排序方向，
  * 使用冒泡排序算法返回排序后结果。
+ *
+ * @author AiWork
+ * @date 2026-09-15
  */
 @RestController
 @RequestMapping("/api/sort")
 public class SortController {
+
+    private static final Logger log = LoggerFactory.getLogger(SortController.class);
 
     private final SortService sortService;
 
@@ -32,21 +40,29 @@ public class SortController {
      * @return 统一出参 {code, msg, data}
      */
     @PostMapping("/bubble")
-    public SortResponse<SortResult> bubbleSort(@RequestBody SortRequest request) {
-        // R01: numbers 不可为 null 且不可为空数组
+    public SortResponse<SortResult> bubbleSort(@Valid @RequestBody SortRequest request) {
+        long start = System.currentTimeMillis();
+        int requestCount = request.getNumbers() != null ? request.getNumbers().size() : 0;
+        log.info("收到排序请求，count={}, order={}", requestCount, request.getOrder());
+
+        // R01: numbers 不可为空数组
         if (request.getNumbers() == null || request.getNumbers().isEmpty()) {
-            return SortResponse.error("SORT_001", "待排序数组不能为空");
+            log.warn("校验失败：待排序数组为空");
+            return SortResponse.error(SortConstants.CODE_SORT_EMPTY, "待排序数组不能为空");
         }
 
         // R02: numbers 元素数量 ≤ 1000
-        if (request.getNumbers().size() > SortService.MAX_INPUT_SIZE) {
-            return SortResponse.error("SORT_002", "待排序元素数量超过上限 " + SortService.MAX_INPUT_SIZE);
+        if (request.getNumbers().size() > SortConstants.MAX_INPUT_SIZE) {
+            log.warn("校验失败：元素数量 {} 超过上限 {}", request.getNumbers().size(), SortConstants.MAX_INPUT_SIZE);
+            return SortResponse.error(SortConstants.CODE_SORT_OVERSIZE,
+                    "待排序元素数量超过上限 " + SortConstants.MAX_INPUT_SIZE);
         }
 
-        // R04: numbers 不可包含 null 元素（F03：非法元素校验）
+        // F03: numbers 不可包含 null 元素
         for (Integer num : request.getNumbers()) {
             if (num == null) {
-                return SortResponse.error("SORT_004", "待排序数组包含 null 元素");
+                log.warn("校验失败：待排序数组包含 null 元素");
+                return SortResponse.error(SortConstants.CODE_SORT_NULL_ELEMENT, "待排序数组包含 null 元素");
             }
         }
 
@@ -59,7 +75,9 @@ public class SortController {
             try {
                 order = SortOrder.valueOf(orderStr.trim().toUpperCase());
             } catch (IllegalArgumentException e) {
-                return SortResponse.error("SORT_003", "排序方向非法，仅支持 ASC/DESC");
+                log.warn("校验失败：排序方向非法 order={}", orderStr);
+                return SortResponse.error(SortConstants.CODE_SORT_INVALID_ORDER,
+                        "排序方向非法，仅支持 ASC/DESC");
             }
         }
 
@@ -67,6 +85,8 @@ public class SortController {
         List<Integer> sorted = sortService.bubbleSort(request.getNumbers(), order);
 
         SortResult result = new SortResult(sorted, order.name(), sorted.size());
+        long elapsed = System.currentTimeMillis() - start;
+        log.info("排序完成，count={}, order={}, 耗时={}ms", sorted.size(), order, elapsed);
         return SortResponse.success(result);
     }
 }

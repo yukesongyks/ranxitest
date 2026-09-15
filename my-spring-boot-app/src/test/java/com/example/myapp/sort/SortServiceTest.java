@@ -8,123 +8,241 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * 冒泡排序服务单元测试。
+ *
+ * @author AiWork
+ * @date 2026-09-15
+ */
 class SortServiceTest {
 
-    private final SortService sortService = new SortService();
+    private final SortService sortService = new SortServiceImpl();
 
     // ===== 升序（ASC）测试 =====
 
     @Test
     void bubbleSort_asc_normalCase() {
-        List<Integer> result = sortService.bubbleSort(Arrays.asList(5, 2, 9, 1, 5, 6), SortOrder.ASC);
-        assertEquals(Arrays.asList(1, 2, 5, 5, 6, 9), result);
+        // Arrange
+        List<Integer> input = Arrays.asList(5, 2, 9, 1, 5, 6);
+        List<Integer> expected = Arrays.asList(1, 2, 5, 5, 6, 9);
+
+        // Act
+        List<Integer> result = sortService.bubbleSort(input, SortOrder.ASC);
+
+        // Assert
+        assertEquals(expected, result);
     }
 
     @Test
     void bubbleSort_asc_alreadySorted() {
-        List<Integer> result = sortService.bubbleSort(Arrays.asList(1, 2, 3, 4, 5), SortOrder.ASC);
-        assertEquals(Arrays.asList(1, 2, 3, 4, 5), result);
+        // Arrange
+        List<Integer> input = Arrays.asList(1, 2, 3, 4, 5);
+        List<Integer> expected = Arrays.asList(1, 2, 3, 4, 5);
+
+        // Act
+        List<Integer> result = sortService.bubbleSort(input, SortOrder.ASC);
+
+        // Assert
+        assertEquals(expected, result);
     }
 
     @Test
     void bubbleSort_asc_reverseOrder() {
-        List<Integer> result = sortService.bubbleSort(Arrays.asList(5, 4, 3, 2, 1), SortOrder.ASC);
-        assertEquals(Arrays.asList(1, 2, 3, 4, 5), result);
+        // Arrange
+        List<Integer> input = Arrays.asList(5, 4, 3, 2, 1);
+        List<Integer> expected = Arrays.asList(1, 2, 3, 4, 5);
+
+        // Act
+        List<Integer> result = sortService.bubbleSort(input, SortOrder.ASC);
+
+        // Assert
+        assertEquals(expected, result);
     }
 
     @Test
     void bubbleSort_asc_singleElement() {
-        List<Integer> result = sortService.bubbleSort(Collections.singletonList(42), SortOrder.ASC);
-        assertEquals(Collections.singletonList(42), result);
+        // Arrange
+        List<Integer> input = Collections.singletonList(42);
+        List<Integer> expected = Collections.singletonList(42);
+
+        // Act
+        List<Integer> result = sortService.bubbleSort(input, SortOrder.ASC);
+
+        // Assert
+        assertEquals(expected, result);
     }
 
     @Test
     void bubbleSort_asc_allEqual() {
-        List<Integer> result = sortService.bubbleSort(Arrays.asList(3, 3, 3, 3), SortOrder.ASC);
-        assertEquals(Arrays.asList(3, 3, 3, 3), result);
+        // Arrange
+        List<Integer> input = Arrays.asList(3, 3, 3, 3);
+        List<Integer> expected = Arrays.asList(3, 3, 3, 3);
+
+        // Act
+        List<Integer> result = sortService.bubbleSort(input, SortOrder.ASC);
+
+        // Assert
+        assertEquals(expected, result);
     }
 
     @Test
     void bubbleSort_asc_withNegatives() {
-        List<Integer> result = sortService.bubbleSort(Arrays.asList(-3, 5, -1, 0, 2), SortOrder.ASC);
-        assertEquals(Arrays.asList(-3, -1, 0, 2, 5), result);
+        // Arrange
+        List<Integer> input = Arrays.asList(-3, 5, -1, 0, 2);
+        List<Integer> expected = Arrays.asList(-3, -1, 0, 2, 5);
+
+        // Act
+        List<Integer> result = sortService.bubbleSort(input, SortOrder.ASC);
+
+        // Assert
+        assertEquals(expected, result);
     }
 
     // ===== 降序（DESC）测试 =====
 
     @Test
     void bubbleSort_desc_normalCase() {
-        List<Integer> result = sortService.bubbleSort(Arrays.asList(5, 2, 9, 1, 5, 6), SortOrder.DESC);
-        assertEquals(Arrays.asList(9, 6, 5, 5, 2, 1), result);
+        // Arrange
+        List<Integer> input = Arrays.asList(5, 2, 9, 1, 5, 6);
+        List<Integer> expected = Arrays.asList(9, 6, 5, 5, 2, 1);
+
+        // Act
+        List<Integer> result = sortService.bubbleSort(input, SortOrder.DESC);
+
+        // Assert
+        assertEquals(expected, result);
     }
 
     @Test
     void bubbleSort_desc_alreadySorted() {
-        List<Integer> result = sortService.bubbleSort(Arrays.asList(5, 4, 3, 2, 1), SortOrder.DESC);
-        assertEquals(Arrays.asList(5, 4, 3, 2, 1), result);
+        // Arrange
+        List<Integer> input = Arrays.asList(5, 4, 3, 2, 1);
+        List<Integer> expected = Arrays.asList(5, 4, 3, 2, 1);
+
+        // Act
+        List<Integer> result = sortService.bubbleSort(input, SortOrder.DESC);
+
+        // Assert
+        assertEquals(expected, result);
     }
 
     @Test
     void bubbleSort_desc_singleElement() {
-        List<Integer> result = sortService.bubbleSort(Collections.singletonList(7), SortOrder.DESC);
-        assertEquals(Collections.singletonList(7), result);
+        // Arrange
+        List<Integer> input = Collections.singletonList(7);
+        List<Integer> expected = Collections.singletonList(7);
+
+        // Act
+        List<Integer> result = sortService.bubbleSort(input, SortOrder.DESC);
+
+        // Assert
+        assertEquals(expected, result);
     }
 
     @Test
     void bubbleSort_desc_allEqual() {
-        List<Integer> result = sortService.bubbleSort(Arrays.asList(8, 8, 8), SortOrder.DESC);
-        assertEquals(Arrays.asList(8, 8, 8), result);
+        // Arrange
+        List<Integer> input = Arrays.asList(8, 8, 8);
+        List<Integer> expected = Arrays.asList(8, 8, 8);
+
+        // Act
+        List<Integer> result = sortService.bubbleSort(input, SortOrder.DESC);
+
+        // Assert
+        assertEquals(expected, result);
     }
 
     // ===== 边界与安全性测试 =====
 
     @Test
     void bubbleSort_emptyList() {
-        List<Integer> result = sortService.bubbleSort(Collections.emptyList(), SortOrder.ASC);
+        // Arrange
+        List<Integer> input = Collections.emptyList();
+
+        // Act
+        List<Integer> result = sortService.bubbleSort(input, SortOrder.ASC);
+
+        // Assert
         assertTrue(result.isEmpty());
     }
 
     @Test
     void bubbleSort_twoElements_asc() {
-        List<Integer> result = sortService.bubbleSort(Arrays.asList(2, 1), SortOrder.ASC);
-        assertEquals(Arrays.asList(1, 2), result);
+        // Arrange
+        List<Integer> input = Arrays.asList(2, 1);
+        List<Integer> expected = Arrays.asList(1, 2);
+
+        // Act
+        List<Integer> result = sortService.bubbleSort(input, SortOrder.ASC);
+
+        // Assert
+        assertEquals(expected, result);
     }
 
     @Test
     void bubbleSort_doesNotModifyInput() {
+        // Arrange
         List<Integer> input = Arrays.asList(5, 3, 1, 4, 2);
+        List<Integer> expected = Arrays.asList(5, 3, 1, 4, 2);
+
+        // Act
         sortService.bubbleSort(input, SortOrder.ASC);
-        // 原始列表不应被修改
-        assertEquals(Arrays.asList(5, 3, 1, 4, 2), input);
+
+        // Assert
+        assertEquals(expected, input);
     }
 
     @Test
     void bubbleSort_stability_equalElementsKeepRelativeOrder() {
-        // 冒泡排序是稳定排序，相等元素相对位置不变
-        List<Integer> result = sortService.bubbleSort(Arrays.asList(5, 5, 5, 5), SortOrder.ASC);
-        assertEquals(Arrays.asList(5, 5, 5, 5), result);
+        // Arrange
+        List<Integer> input = Arrays.asList(5, 5, 5, 5);
+        List<Integer> expected = Arrays.asList(5, 5, 5, 5);
+
+        // Act
+        List<Integer> result = sortService.bubbleSort(input, SortOrder.ASC);
+
+        // Assert
+        assertEquals(expected, result);
     }
 
     @Test
     void bubbleSort_maxSize_1000() {
-        // 构造 1000 个逆序元素，验证上限规模可正常排序
-        java.util.List<Integer> input = new java.util.ArrayList<>();
+        // Arrange
+        List<Integer> input = new java.util.ArrayList<>();
         for (int i = 1000; i >= 1; i--) {
             input.add(i);
         }
+
+        // Act
         List<Integer> result = sortService.bubbleSort(input, SortOrder.ASC);
+
+        // Assert
         assertEquals(1000, result.size());
         assertEquals(1, result.get(0));
         assertEquals(1000, result.get(999));
     }
 
-    // ===== null 元素防御性测试 =====
+    // ===== null 入参防御性测试 =====
 
     @Test
-    void bubbleSort_nullElement_throwsIllegalArgumentException() {
-        // numbers 中包含 null 元素时，Service 应抛出 IllegalArgumentException 而非 NPE
-        List<Integer> input = Arrays.asList(1, null, 3);
-        assertThrows(IllegalArgumentException.class,
+    void bubbleSort_nullInput_throwsSortException() {
+        // Arrange
+        List<Integer> input = null;
+
+        // Act & Assert
+        SortException ex = assertThrows(SortException.class,
                 () -> sortService.bubbleSort(input, SortOrder.ASC));
+        assertEquals(SortConstants.CODE_SORT_EMPTY, ex.getCode());
+    }
+
+    @Test
+    void bubbleSort_nullElement_throwsSortException() {
+        // Arrange
+        List<Integer> input = Arrays.asList(1, null, 3);
+
+        // Act & Assert
+        SortException ex = assertThrows(SortException.class,
+                () -> sortService.bubbleSort(input, SortOrder.ASC));
+        assertEquals(SortConstants.CODE_SORT_NULL_ELEMENT, ex.getCode());
     }
 }
