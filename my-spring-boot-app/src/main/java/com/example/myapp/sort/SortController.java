@@ -43,6 +43,13 @@ public class SortController {
             return SortResponse.error("SORT_002", "待排序元素数量超过上限 " + SortService.MAX_INPUT_SIZE);
         }
 
+        // R04: numbers 不可包含 null 元素（F03：非法元素校验）
+        for (Integer num : request.getNumbers()) {
+            if (num == null) {
+                return SortResponse.error("SORT_004", "待排序数组包含 null 元素");
+            }
+        }
+
         // R03: order 为空时默认 ASC；非空时仅允许 ASC/DESC
         SortOrder order;
         String orderStr = request.getOrder();

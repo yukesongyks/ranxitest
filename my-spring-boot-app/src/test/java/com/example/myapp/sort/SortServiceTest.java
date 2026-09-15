@@ -117,4 +117,14 @@ class SortServiceTest {
         assertEquals(1, result.get(0));
         assertEquals(1000, result.get(999));
     }
+
+    // ===== null 元素防御性测试 =====
+
+    @Test
+    void bubbleSort_nullElement_throwsIllegalArgumentException() {
+        // numbers 中包含 null 元素时，Service 应抛出 IllegalArgumentException 而非 NPE
+        List<Integer> input = Arrays.asList(1, null, 3);
+        assertThrows(IllegalArgumentException.class,
+                () -> sortService.bubbleSort(input, SortOrder.ASC));
+    }
 }

@@ -28,8 +28,19 @@ public class SortService {
      * @return 排序后的新列表
      */
     public List<Integer> bubbleSort(List<Integer> numbers, SortOrder order) {
+        if (numbers == null) {
+            throw new IllegalArgumentException("待排序数组不能为 null");
+        }
+
         // 防御性拷贝，避免对调用方传入集合的副作用（R05）
         List<Integer> arr = new ArrayList<>(numbers);
+
+        // 校验是否存在 null 元素（F03：非法元素校验）
+        for (int k = 0; k < arr.size(); k++) {
+            if (arr.get(k) == null) {
+                throw new IllegalArgumentException("待排序数组包含 null 元素，索引: " + k);
+            }
+        }
 
         int n = arr.size();
         // 单元素或空列表无需排序
