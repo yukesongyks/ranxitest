@@ -110,14 +110,11 @@
 
 ## 7. 结论
 
-- **合并建议**：通过
+- **合并建议**：通过（P2 已修复）
 - **P0**：无
 - **P1**：无
-- **P2**：
-  1. `QuickSort.java:53` — pivot 始终取末尾元素，对已排序数据性能退化为 O(n²)，建议后续优化为三数取中法或随机化 pivot
-  2. `SorterTest.java:5-6` — 导入了未使用的 `@ParameterizedTest`、`@CsvSource`、`@ValueSource`
-  3. `SortUtils.java:21` — `swap` 方法可添加 `i == j` 短路避免无意义赋值（极小优化）
-- **一句话**：代码结构清晰，功能完整覆盖设计文档要求，边界条件和异常处理到位，测试覆盖充分，可直接合并；仅存在 3 处 P2 优化建议，不影响功能正确性。
+- **P2**：无（全部已修复）
+- **一句话**：代码结构清晰，功能完整覆盖设计文档要求，边界条件和异常处理到位，测试覆盖充分；3 处 P2 优化建议已全部修复，当前代码可直接合并。
 
 ---
 
@@ -181,8 +178,9 @@ L25|    }
 
 - 无待修复项。
 
-### P2（可选）
+### P2（已修复 ✅）
 
-- [ ] **P2** `my-spring-boot-app/src/main/java/com/example/myapp/sort/QuickSort.java:53` — 优化 pivot 选择策略（如三数取中或随机化），避免已排序数据上的 O(n²) 退化
-- [ ] **P2** `my-spring-boot-app/src/test/java/com/example/myapp/sort/SorterTest.java:4-6` — 移除未使用的 import（`ParameterizedTest`、`CsvSource`、`ValueSource`）
-- [ ] **P2** `my-spring-boot-app/src/main/java/com/example/myapp/sort/SortUtils.java:21` — 在 swap 方法开头添加 `if (i == j) return;` 短路相同下标交换
+- [x] **P2** `my-spring-boot-app/src/main/java/com/example/myapp/sort/QuickSort.java:53` — 优化 pivot 选择策略（如三数取中或随机化），避免已排序数据上的 O(n²) 退化
+  - **修复内容**：partition 方法内新增三数取中法，比较 `array[low]`、`array[mid]`、`array[high]` 并通过 swap 将中位数交换至末尾作为 pivot
+- [x] **P2** `my-spring-boot-app/src/test/java/com/example/myapp/sort/SorterTest.java:4-6` — 移除未使用的 import（`ParameterizedTest`、`CsvSource`、`ValueSource`）
+- [x] **P2** `my-spring-boot-app/src/main/java/com/example/myapp/sort/SortUtils.java:21` — 在 swap 方法开头添加 `if (i == j) return;` 短路相同下标交换

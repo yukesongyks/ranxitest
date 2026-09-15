@@ -42,7 +42,7 @@ public class QuickSort<T extends Comparable<T>> implements Sorter<T> {
     /**
      * 分区操作：将数组按基准值划分为左右两部分。
      *
-     * <p>默认采用末尾元素作为 pivot。所有 &lt; pivot 的元素移到左侧，&gt;= pivot 的元素移到右侧。</p>
+     * <p>采用三数取中法选取 pivot，降低对已排序数据的退化风险。所有 &lt; pivot 的元素移到左侧，&gt;= pivot 的元素移到右侧。</p>
      *
      * @param array 目标数组
      * @param low   分区区间左边界
@@ -50,6 +50,19 @@ public class QuickSort<T extends Comparable<T>> implements Sorter<T> {
      * @return 基准值的最终位置
      */
     private int partition(T[] array, int low, int high) {
+        int mid = low + (high - low) / 2;
+
+        // 三数取中：将中位数交换到末尾作为 pivot
+        if (array[low].compareTo(array[mid]) > 0) {
+            SortUtils.swap(array, low, mid);
+        }
+        if (array[low].compareTo(array[high]) > 0) {
+            SortUtils.swap(array, low, high);
+        }
+        if (array[mid].compareTo(array[high]) > 0) {
+            SortUtils.swap(array, mid, high);
+        }
+
         T pivot = array[high];
         int i = low - 1;
 

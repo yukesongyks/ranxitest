@@ -19,6 +19,9 @@ public final class SortUtils {
      * @param j     第二个元素下标
      */
     public static <T> void swap(T[] array, int i, int j) {
+        if (i == j) {
+            return;
+        }
         T temp = array[i];
         array[i] = array[j];
         array[j] = temp;
