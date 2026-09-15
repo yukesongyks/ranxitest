@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -40,10 +39,12 @@ public class SortController {
      * @return 统一出参 {code, msg, data}
      */
     @PostMapping("/bubble")
-    public SortResponse<SortResult> bubbleSort(@Valid @RequestBody SortRequest request) {
+    public SortResponse<SortResult> bubbleSort(@RequestBody SortRequest request) {
         long start = System.currentTimeMillis();
         int requestCount = request.getNumbers() != null ? request.getNumbers().size() : 0;
-        log.info("收到排序请求，count={}, order={}", requestCount, request.getOrder());
+        if (log.isInfoEnabled()) {
+            log.info("收到排序请求，count={}, order={}", requestCount, request.getOrder());
+        }
 
         // R01: numbers 不可为空数组
         if (request.getNumbers() == null || request.getNumbers().isEmpty()) {
@@ -86,7 +87,9 @@ public class SortController {
 
         SortResult result = new SortResult(sorted, order.name(), sorted.size());
         long elapsed = System.currentTimeMillis() - start;
-        log.info("排序完成，count={}, order={}, 耗时={}ms", sorted.size(), order, elapsed);
+        if (log.isInfoEnabled()) {
+            log.info("排序完成，count={}, order={}, 耗时={}ms", sorted.size(), order, elapsed);
+        }
         return SortResponse.success(result);
     }
 }

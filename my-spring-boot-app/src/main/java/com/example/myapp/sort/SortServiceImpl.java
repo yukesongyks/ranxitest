@@ -49,7 +49,9 @@ public class SortServiceImpl implements SortService {
         int n = arr.size();
         // 单元素或空列表无需排序
         if (n <= 1) {
-            log.debug("排序元素数量 ≤ 1，直接返回，count={}, order={}", n, order);
+            if (log.isDebugEnabled()) {
+                log.debug("排序元素数量 ≤ 1，直接返回，count={}, order={}", n, order);
+            }
             return arr;
         }
 
@@ -71,7 +73,9 @@ public class SortServiceImpl implements SortService {
         }
 
         long elapsed = System.currentTimeMillis() - start;
-        log.info("冒泡排序完成，count={}, order={}, 耗时={}ms", n, order, elapsed);
+        if (log.isInfoEnabled()) {
+            log.info("冒泡排序完成，count={}, order={}, 耗时={}ms", n, order, elapsed);
+        }
 
         return arr;
     }

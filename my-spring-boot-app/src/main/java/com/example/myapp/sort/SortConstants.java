@@ -21,16 +21,16 @@ public final class SortConstants {
     public static final String MSG_SUCCESS = "SUCCESS";
 
     /** 错误码：待排序数组为空或 null。 */
-    public static final String CODE_SORT_EMPTY = "S0001";
+    public static final String CODE_SORT_EMPTY = "A0001";
 
     /** 错误码：待排序元素数量超过上限。 */
-    public static final String CODE_SORT_OVERSIZE = "S0002";
+    public static final String CODE_SORT_OVERSIZE = "A0002";
 
     /** 错误码：排序方向非法（仅允许 ASC/DESC）。 */
-    public static final String CODE_SORT_INVALID_ORDER = "S0003";
+    public static final String CODE_SORT_INVALID_ORDER = "A0003";
 
     /** 错误码：待排序数组包含 null 元素。 */
-    public static final String CODE_SORT_NULL_ELEMENT = "S0004";
+    public static final String CODE_SORT_NULL_ELEMENT = "A0004";
 
     /** 单次排序元素数量上限。 */
     public static final int MAX_INPUT_SIZE = 1000;

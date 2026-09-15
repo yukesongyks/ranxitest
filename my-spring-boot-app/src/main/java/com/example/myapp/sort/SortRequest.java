@@ -1,7 +1,5 @@
 package com.example.myapp.sort;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import java.util.List;
 
 /**
@@ -13,8 +11,6 @@ import java.util.List;
 public class SortRequest {
 
     /** 待排序整数数组。 */
-    @NotNull(message = "待排序数组不能为空")
-    @Size(max = SortConstants.MAX_INPUT_SIZE, message = "待排序元素数量超过上限 1000")
     private List<Integer> numbers;
 
     /** 排序方向，ASC=升序（默认），DESC=降序。 */

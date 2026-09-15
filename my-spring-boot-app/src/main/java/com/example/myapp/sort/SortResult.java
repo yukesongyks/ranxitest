@@ -17,7 +17,7 @@ public class SortResult {
     private String order;
 
     /** 参与排序的元素数量。 */
-    private int count;
+    private Integer count;
 
     /**
      * 构造排序结果。
@@ -26,7 +26,7 @@ public class SortResult {
      * @param order  排序方向
      * @param count  元素数量
      */
-    public SortResult(List<Integer> sorted, String order, int count) {
+    public SortResult(List<Integer> sorted, String order, Integer count) {
         this.sorted = sorted;
         this.order = order;
         this.count = count;
@@ -73,7 +73,7 @@ public class SortResult {
      *
      * @return 元素数量
      */
-    public int getCount() {
+    public Integer getCount() {
         return count;
     }
 
@@ -82,7 +82,7 @@ public class SortResult {
      *
      * @param count 元素数量
      */
-    public void setCount(int count) {
+    public void setCount(Integer count) {
         this.count = count;
     }
 

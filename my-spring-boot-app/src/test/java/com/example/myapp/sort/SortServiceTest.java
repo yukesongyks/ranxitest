@@ -21,7 +21,7 @@ class SortServiceTest {
     // ===== 升序（ASC）测试 =====
 
     @Test
-    void bubbleSort_asc_normalCase() {
+    void should_sortAsc_when_normalCase() {
         // Arrange
         List<Integer> input = Arrays.asList(5, 2, 9, 1, 5, 6);
         List<Integer> expected = Arrays.asList(1, 2, 5, 5, 6, 9);
@@ -34,7 +34,7 @@ class SortServiceTest {
     }
 
     @Test
-    void bubbleSort_asc_alreadySorted() {
+    void should_returnSorted_when_alreadySortedAsc() {
         // Arrange
         List<Integer> input = Arrays.asList(1, 2, 3, 4, 5);
         List<Integer> expected = Arrays.asList(1, 2, 3, 4, 5);
@@ -47,7 +47,7 @@ class SortServiceTest {
     }
 
     @Test
-    void bubbleSort_asc_reverseOrder() {
+    void should_sortAsc_when_reverseOrder() {
         // Arrange
         List<Integer> input = Arrays.asList(5, 4, 3, 2, 1);
         List<Integer> expected = Arrays.asList(1, 2, 3, 4, 5);
@@ -60,7 +60,7 @@ class SortServiceTest {
     }
 
     @Test
-    void bubbleSort_asc_singleElement() {
+    void should_returnSingleElement_when_singleElementAsc() {
         // Arrange
         List<Integer> input = Collections.singletonList(42);
         List<Integer> expected = Collections.singletonList(42);
@@ -73,7 +73,7 @@ class SortServiceTest {
     }
 
     @Test
-    void bubbleSort_asc_allEqual() {
+    void should_keepOrder_when_allEqualAsc() {
         // Arrange
         List<Integer> input = Arrays.asList(3, 3, 3, 3);
         List<Integer> expected = Arrays.asList(3, 3, 3, 3);
@@ -86,7 +86,7 @@ class SortServiceTest {
     }
 
     @Test
-    void bubbleSort_asc_withNegatives() {
+    void should_sortAsc_when_withNegatives() {
         // Arrange
         List<Integer> input = Arrays.asList(-3, 5, -1, 0, 2);
         List<Integer> expected = Arrays.asList(-3, -1, 0, 2, 5);
@@ -101,7 +101,7 @@ class SortServiceTest {
     // ===== 降序（DESC）测试 =====
 
     @Test
-    void bubbleSort_desc_normalCase() {
+    void should_sortDesc_when_normalCase() {
         // Arrange
         List<Integer> input = Arrays.asList(5, 2, 9, 1, 5, 6);
         List<Integer> expected = Arrays.asList(9, 6, 5, 5, 2, 1);
@@ -114,7 +114,7 @@ class SortServiceTest {
     }
 
     @Test
-    void bubbleSort_desc_alreadySorted() {
+    void should_returnSorted_when_alreadySortedDesc() {
         // Arrange
         List<Integer> input = Arrays.asList(5, 4, 3, 2, 1);
         List<Integer> expected = Arrays.asList(5, 4, 3, 2, 1);
@@ -127,7 +127,7 @@ class SortServiceTest {
     }
 
     @Test
-    void bubbleSort_desc_singleElement() {
+    void should_returnSingleElement_when_singleElementDesc() {
         // Arrange
         List<Integer> input = Collections.singletonList(7);
         List<Integer> expected = Collections.singletonList(7);
@@ -140,7 +140,7 @@ class SortServiceTest {
     }
 
     @Test
-    void bubbleSort_desc_allEqual() {
+    void should_keepOrder_when_allEqualDesc() {
         // Arrange
         List<Integer> input = Arrays.asList(8, 8, 8);
         List<Integer> expected = Arrays.asList(8, 8, 8);
@@ -155,7 +155,7 @@ class SortServiceTest {
     // ===== 边界与安全性测试 =====
 
     @Test
-    void bubbleSort_emptyList() {
+    void should_returnEmpty_when_emptyList() {
         // Arrange
         List<Integer> input = Collections.emptyList();
 
@@ -167,7 +167,7 @@ class SortServiceTest {
     }
 
     @Test
-    void bubbleSort_twoElements_asc() {
+    void should_sortAsc_when_twoElements() {
         // Arrange
         List<Integer> input = Arrays.asList(2, 1);
         List<Integer> expected = Arrays.asList(1, 2);
@@ -180,7 +180,7 @@ class SortServiceTest {
     }
 
     @Test
-    void bubbleSort_doesNotModifyInput() {
+    void should_notModifyInput_when_sorting() {
         // Arrange
         List<Integer> input = Arrays.asList(5, 3, 1, 4, 2);
         List<Integer> expected = Arrays.asList(5, 3, 1, 4, 2);
@@ -193,7 +193,7 @@ class SortServiceTest {
     }
 
     @Test
-    void bubbleSort_stability_equalElementsKeepRelativeOrder() {
+    void should_keepRelativeOrder_when_equalElements() {
         // Arrange
         List<Integer> input = Arrays.asList(5, 5, 5, 5);
         List<Integer> expected = Arrays.asList(5, 5, 5, 5);
@@ -206,7 +206,7 @@ class SortServiceTest {
     }
 
     @Test
-    void bubbleSort_maxSize_1000() {
+    void should_sortCorrectly_when_maxSize1000() {
         // Arrange
         List<Integer> input = new java.util.ArrayList<>();
         for (int i = 1000; i >= 1; i--) {
@@ -225,7 +225,7 @@ class SortServiceTest {
     // ===== null 入参防御性测试 =====
 
     @Test
-    void bubbleSort_nullInput_throwsSortException() {
+    void should_throwSortException_when_inputIsNull() {
         // Arrange
         List<Integer> input = null;
 
@@ -236,7 +236,7 @@ class SortServiceTest {
     }
 
     @Test
-    void bubbleSort_nullElement_throwsSortException() {
+    void should_throwSortException_when_containsNullElement() {
         // Arrange
         List<Integer> input = Arrays.asList(1, null, 3);
 
