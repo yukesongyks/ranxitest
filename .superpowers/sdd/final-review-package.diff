@@ -1,0 +1,316 @@
+### git status --short (working tree; session forbids commits — changes are uncommitted)
+A  docs/superpowers/plans/2026-09-15-lottery-system.md
+?? .superpowers/
+?? my-spring-boot-app/src/main/java/com/example/myapp/controllers/LotteryController.java
+?? my-spring-boot-app/src/main/java/com/example/myapp/services/LotteryService.java
+?? my-spring-boot-app/src/main/resources/templates/lottery/
+?? my-spring-boot-app/src/test/java/com/example/myapp/controllers/
+?? my-spring-boot-app/src/test/java/com/example/myapp/services/
+
+### Full new-file diffs (unified, vs /dev/null)
+
+--- /dev/null	2026-09-15 05:37:51.571054172 +0000
++++ my-spring-boot-app/src/main/java/com/example/myapp/services/LotteryService.java	2026-09-15 07:10:44.683992763 +0000
+@@ -0,0 +1,28 @@
++package com.example.myapp.services;
++
++import org.springframework.stereotype.Service;
++
++import java.util.List;
++import java.util.concurrent.ThreadLocalRandom;
++import java.util.stream.Collectors;
++
++@Service
++public class LotteryService {
++
++    private static final int COUNT = 5;
++    private static final int MIN = 1;
++    private static final int MAX_INCLUSIVE = 999;
++
++    /**
++     * 摇号：返回 5 个互不重复、升序排列的随机整数，范围 [1, 999]。
++     */
++    public List<Integer> draw() {
++        return ThreadLocalRandom.current()
++                .ints(MIN, MAX_INCLUSIVE + 1)
++                .distinct()
++                .limit(COUNT)
++                .boxed()
++                .sorted()
++                .collect(Collectors.toList());
++    }
++}
+
+--- /dev/null	2026-09-15 05:37:51.571054172 +0000
++++ my-spring-boot-app/src/test/java/com/example/myapp/services/LotteryServiceTest.java	2026-09-15 07:10:44.684992801 +0000
+@@ -0,0 +1,52 @@
++package com.example.myapp.services;
++
++import org.junit.jupiter.api.Test;
++
++import java.util.List;
++
++import static org.junit.jupiter.api.Assertions.assertEquals;
++import static org.junit.jupiter.api.Assertions.assertTrue;
++
++class LotteryServiceTest {
++
++    private final LotteryService lotteryService = new LotteryService();
++
++    @Test
++    void drawReturnsFiveNumbers() {
++        List<Integer> result = lotteryService.draw();
++        assertEquals(5, result.size());
++    }
++
++    @Test
++    void drawNumbersAreWithinRange() {
++        List<Integer> result = lotteryService.draw();
++        for (Integer n : result) {
++            assertTrue(n >= 1 && n <= 999, "数字越界: " + n);
++        }
++    }
++
++    @Test
++    void drawNumbersAreDistinct() {
++        List<Integer> result = lotteryService.draw();
++        assertEquals(5, result.stream().distinct().count(), "存在重复数字");
++    }
++
++    @Test
++    void drawNumbersAreSortedAscending() {
++        List<Integer> result = lotteryService.draw();
++        for (int i = 1; i < result.size(); i++) {
++            assertTrue(result.get(i - 1) < result.get(i), "结果未升序排列");
++        }
++    }
++
++    @Test
++    void drawIsRandomAcrossInvocations() {
++        // 多次抽取，至少出现两组不同结果，验证随机性（理论上 1-999 取 5 个组合极多，碰撞概率可忽略）
++        boolean differ = false;
++        List<Integer> first = lotteryService.draw();
++        for (int i = 0; i < 10 && !differ; i++) {
++            differ = !first.equals(lotteryService.draw());
++        }
++        assertTrue(differ, "多次摇号结果完全相同，疑似未随机");
++    }
++}
+
+--- /dev/null	2026-09-15 05:37:51.571054172 +0000
++++ my-spring-boot-app/src/main/java/com/example/myapp/controllers/LotteryController.java	2026-09-15 06:58:43.306182920 +0000
+@@ -0,0 +1,29 @@
++package com.example.myapp.controllers;
++
++import com.example.myapp.services.LotteryService;
++import org.springframework.stereotype.Controller;
++import org.springframework.web.bind.annotation.GetMapping;
++import org.springframework.web.bind.annotation.ResponseBody;
++
++import java.util.List;
++
++@Controller
++public class LotteryController {
++
++    private final LotteryService lotteryService;
++
++    public LotteryController(LotteryService lotteryService) {
++        this.lotteryService = lotteryService;
++    }
++
++    @GetMapping("/lottery")
++    public String lotteryPage() {
++        return "lottery/index";
++    }
++
++    @GetMapping("/api/lottery/draw")
++    @ResponseBody
++    public List<Integer> draw() {
++        return lotteryService.draw();
++    }
++}
+
+--- /dev/null	2026-09-15 05:37:51.571054172 +0000
++++ my-spring-boot-app/src/test/java/com/example/myapp/controllers/LotteryControllerTest.java	2026-09-15 06:58:43.306182920 +0000
+@@ -0,0 +1,44 @@
++package com.example.myapp.controllers;
++
++import com.example.myapp.services.LotteryService;
++import org.junit.jupiter.api.Test;
++import org.springframework.beans.factory.annotation.Autowired;
++import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
++import org.springframework.boot.test.mock.mockito.MockBean;
++import org.springframework.test.context.TestPropertySource;
++import org.springframework.test.web.servlet.MockMvc;
++
++import java.util.List;
++
++import static org.mockito.Mockito.when;
++import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
++import static org.hamcrest.Matchers.hasSize;
++import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
++
++@WebMvcTest(LotteryController.class)
++@TestPropertySource(properties = "spring.thymeleaf.check-template=false")
++class LotteryControllerTest {
++
++    @Autowired
++    private MockMvc mockMvc;
++
++    @MockBean
++    private LotteryService lotteryService;
++
++    @Test
++    void drawEndpointReturnsFiveNumbersAsJson() throws Exception {
++        when(lotteryService.draw()).thenReturn(List.of(9, 45, 123, 500, 678));
++
++        mockMvc.perform(get("/api/lottery/draw"))
++                .andExpect(status().isOk())
++                .andExpect(content().json("[9,45,123,500,678]"))
++                .andExpect(jsonPath("$", hasSize(5)));
++    }
++
++    @Test
++    void lotteryPageIsRendered() throws Exception {
++        mockMvc.perform(get("/lottery"))
++                .andExpect(status().isOk())
++                .andExpect(view().name("lottery/index"));
++    }
++}
+
+--- /dev/null	2026-09-15 05:37:51.571054172 +0000
++++ my-spring-boot-app/src/main/resources/templates/lottery/index.html	2026-09-15 07:10:40.706844954 +0000
+@@ -0,0 +1,133 @@
++<!DOCTYPE html>
++<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
++<head>
++    <meta charset="UTF-8">
++    <meta name="viewport" content="width=device-width, initial-scale=1.0">
++    <title>摇号系统</title>
++    <style>
++        :root {
++            --primary: #0f766e;
++            --bg: linear-gradient(135deg, #f0fdf4, #eff6ff);
++        }
++
++        * { box-sizing: border-box; }
++
++        body {
++            margin: 0;
++            font-family: "Helvetica Neue", "PingFang SC", sans-serif;
++            background: var(--bg);
++            min-height: 100vh;
++            display: flex;
++            align-items: center;
++            justify-content: center;
++        }
++
++        .container {
++            text-align: center;
++            padding: 40px;
++        }
++
++        h1 {
++            font-size: 36px;
++            color: var(--primary);
++            margin-bottom: 16px;
++        }
++
++        p {
++            font-size: 18px;
++            color: #6b7280;
++            margin-bottom: 32px;
++        }
++
++        .btn {
++            display: inline-block;
++            background: var(--primary);
++            color: white;
++            padding: 14px 32px;
++            border: none;
++            border-radius: 8px;
++            font-size: 16px;
++            font-weight: 500;
++            cursor: pointer;
++            transition: all 0.2s;
++        }
++
++        .btn:hover {
++            transform: translateY(-2px);
++            box-shadow: 0 4px 12px rgba(15, 118, 110, 0.3);
++        }
++
++        .btn:disabled {
++            opacity: 0.6;
++            cursor: not-allowed;
++            transform: none;
++        }
++
++        #result {
++            display: flex;
++            gap: 16px;
++            justify-content: center;
++            margin-top: 32px;
++            min-height: 80px;
++        }
++
++        .ball {
++            width: 72px;
++            height: 72px;
++            border-radius: 50%;
++            background: white;
++            border: 3px solid var(--primary);
++            color: var(--primary);
++            font-size: 26px;
++            font-weight: 700;
++            display: flex;
++            align-items: center;
++            justify-content: center;
++            box-shadow: 0 4px 10px rgba(15, 118, 110, 0.15);
++        }
++    </style>
++</head>
++<body>
++    <div class="container">
++        <h1>摇号系统</h1>
++        <p>点击按钮，随机摇出 1-999 之间的 5 个数字</p>
++        <button class="btn" id="drawBtn" onclick="drawNumbers()">摇 号</button>
++        <div id="result" aria-live="polite"></div>
++    </div>
++
++    <script>
++        let drawSeq = 0;
++        async function drawNumbers() {
++            const btn = document.getElementById('drawBtn');
++            const result = document.getElementById('result');
++            const seq = ++drawSeq;
++            btn.disabled = true;
++            btn.setAttribute('aria-busy', 'true');
++            btn.textContent = '摇号中...';
++            result.innerHTML = '';
++            try {
++                const response = await fetch('/api/lottery/draw');
++                if (!response.ok) {
++                    throw new Error('HTTP ' + response.status);
++                }
++                const numbers = await response.json();
++                numbers.forEach(function (n, i) {
++                    setTimeout(function () {
++                        if (seq !== drawSeq) return;
++                        const ball = document.createElement('div');
++                        ball.className = 'ball';
++                        ball.textContent = n;
++                        result.appendChild(ball);
++                    }, i * 150);
++                });
++            } catch (e) {
++                result.innerHTML = '<p style="color:#dc2626">摇号失败，请重试</p>';
++            } finally {
++                btn.disabled = false;
++                btn.removeAttribute('aria-busy');
++                btn.textContent = '摇 号';
++            }
++        }
++    </script>
++</body>
++</html>
