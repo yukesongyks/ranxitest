@@ -14,5 +14,6 @@
     "my-spring-boot-app/src/main/java/com/example/myapp/sort/SortController.java",
     "my-spring-boot-app/src/test/java/com/example/myapp/sort/SortServiceTest.java"
   ],
-  "fileCount": 7
+  "fileCount": 7,
+  "count": 10
 }
