@@ -12,20 +12,18 @@
     "my-spring-boot-app/src/main/java/com/example/myapp/sort/SortResponse.java",
     "my-spring-boot-app/src/main/java/com/example/myapp/sort/SortService.java",
     "my-spring-boot-app/src/main/java/com/example/myapp/sort/SortController.java",
+    "my-spring-boot-app/src/main/java/com/example/myapp/sort/SortConstants.java",
+    "my-spring-boot-app/src/main/java/com/example/myapp/sort/SortException.java",
+    "my-spring-boot-app/src/main/java/com/example/myapp/sort/SortServiceImpl.java",
     "my-spring-boot-app/src/test/java/com/example/myapp/sort/SortServiceTest.java"
   ],
-  "fileCount": 7,
-  "count": 10,
+  "fileCount": 10,
+  "count": 5,
   "issues": [
-    {"id": 1, "level": "强制", "dimension": "命名", "file": "SortService.java", "desc": "Service未使用接口+Impl实现模式，应为SortService接口+SortServiceImpl实现类"},
-    {"id": 2, "level": "强制", "dimension": "常量", "file": "SortController.java,SortResponse.java", "desc": "魔法值未定义为常量：错误码SORT_001~004、成功码OK/SUCCESS"},
-    {"id": 3, "level": "强制", "dimension": "注释", "file": "SortOrder.java", "desc": "枚举字段ASC/DESC缺少Javadoc注释"},
-    {"id": 4, "level": "强制", "dimension": "注释", "file": "全部7个类", "desc": "类缺少@author创建者和@date创建日期"},
-    {"id": 5, "level": "强制", "dimension": "异常", "file": "SortController.java", "desc": "错误码格式不符合规范，应为来源字母+4位数字共5位(如A0001)"},
-    {"id": 6, "level": "强制", "dimension": "异常", "file": "SortRequest.java,SortResponse.java,SortResult.java", "desc": "POJO类未覆写toString()方法"},
-    {"id": 7, "level": "推荐", "dimension": "异常", "file": "SortService.java", "desc": "直接抛出IllegalArgumentException，未使用自定义业务异常"},
-    {"id": 8, "level": "推荐", "dimension": "异常", "file": "SortController.java,SortService.java", "desc": "缺少SLF4J日志记录，设计文档要求记录请求量/方向/耗时"},
-    {"id": 9, "level": "推荐", "dimension": "安全", "file": "SortController.java,SortRequest.java", "desc": "@RequestBody未配合@Valid，SortRequest无Bean Validation注解"},
-    {"id": 10, "level": "推荐", "dimension": "单测", "file": "SortServiceTest.java", "desc": "缺少null入参场景测试，测试方法缺少AAA注释分隔"}
+    {"id": 1, "level": "强制", "dimension": "异常", "file": "SortConstants.java", "desc": "错误码来源字母使用'S'（S0001~S0004），但异常日志规约§1.2明确定义错误来源仅限A/B/C。参数校验类错误属用户侧错误，应使用'A'前缀（A0001~A0004）"},
+    {"id": 2, "level": "强制", "dimension": "OOP", "file": "SortResult.java", "desc": "POJO类属性count使用基本类型int，OOP规约§5.1要求POJO类属性必须使用包装数据类型，应为Integer"},
+    {"id": 3, "level": "强制", "dimension": "日志", "file": "SortController.java,SortServiceImpl.java", "desc": "log.info()和log.debug()调用未配合isInfoEnabled()/isDebugEnabled()级别开关判断，违反异常日志规约§3.5。涉及SortController行46/89，SortServiceImpl行52/74"},
+    {"id": 4, "level": "推荐", "dimension": "安全", "file": "SortController.java,SortRequest.java", "desc": "Bean Validation（@NotNull/@Size+@Valid）与Controller手动校验重复，@Valid校验失败时返回Spring默认400格式而非统一{code,msg,data}格式，响应格式不一致"},
+    {"id": 5, "level": "推荐", "dimension": "单测", "file": "SortServiceTest.java", "desc": "测试方法命名使用bubbleSort_asc_normalCase风格，不符合单元测试规约§3.2推荐的should_xxx_when_yyy或test_xxx_when_yyy命名风格"}
   ]
 }
