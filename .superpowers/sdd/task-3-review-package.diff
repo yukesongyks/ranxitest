@@ -1,0 +1,147 @@
+### git status --short (working tree, no commits allowed this session)
+A  docs/superpowers/plans/2026-09-15-lottery-system.md
+?? .superpowers/
+?? my-spring-boot-app/src/main/java/com/example/myapp/controllers/LotteryController.java
+?? my-spring-boot-app/src/main/java/com/example/myapp/services/LotteryService.java
+?? my-spring-boot-app/src/main/resources/templates/lottery/
+?? my-spring-boot-app/src/test/java/com/example/myapp/controllers/
+?? my-spring-boot-app/src/test/java/com/example/myapp/services/
+
+### New file diff (unified, vs /dev/null)
+--- /dev/null	2026-09-15 05:37:51.571054172 +0000
++++ my-spring-boot-app/src/main/resources/templates/lottery/index.html	2026-09-15 07:06:41.726963320 +0000
+@@ -0,0 +1,133 @@
++<!DOCTYPE html>
++<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
++<head>
++    <meta charset="UTF-8">
++    <meta name="viewport" content="width=device-width, initial-scale=1.0">
++    <title>摇号系统</title>
++    <style>
++        :root {
++            --primary: #0f766e;
++            --bg: linear-gradient(135deg, #f0fdf4, #eff6ff);
++        }
++
++        * { box-sizing: border-box; }
++
++        body {
++            margin: 0;
++            font-family: "Helvetica Neue", "PingFang SC", sans-serif;
++            background: var(--bg);
++            min-height: 100vh;
++            display: flex;
++            align-items: center;
++            justify-content: center;
++        }
++
++        .container {
++            text-align: center;
++            padding: 40px;
++        }
++
++        h1 {
++            font-size: 36px;
++            color: var(--primary);
++            margin-bottom: 16px;
++        }
++
++        p {
++            font-size: 18px;
++            color: #6b7280;
++            margin-bottom: 32px;
++        }
++
++        .btn {
++            display: inline-block;
++            background: var(--primary);
++            color: white;
++            padding: 14px 32px;
++            border: none;
++            border-radius: 8px;
++            font-size: 16px;
++            font-weight: 500;
++            cursor: pointer;
++            transition: all 0.2s;
++        }
++
++        .btn:hover {
++            transform: translateY(-2px);
++            box-shadow: 0 4px 12px rgba(15, 118, 110, 0.3);
++        }
++
++        .btn:disabled {
++            opacity: 0.6;
++            cursor: not-allowed;
++            transform: none;
++        }
++
++        #result {
++            display: flex;
++            gap: 16px;
++            justify-content: center;
++            margin-top: 32px;
++            min-height: 80px;
++        }
++
++        .ball {
++            width: 72px;
++            height: 72px;
++            border-radius: 50%;
++            background: white;
++            border: 3px solid var(--primary);
++            color: var(--primary);
++            font-size: 26px;
++            font-weight: 700;
++            display: flex;
++            align-items: center;
++            justify-content: center;
++            box-shadow: 0 4px 10px rgba(15, 118, 110, 0.15);
++        }
++    </style>
++</head>
++<body>
++    <div class="container">
++        <h1>摇号系统</h1>
++        <p>点击按钮，随机摇出 1-999 之间的 5 个数字</p>
++        <button class="btn" id="drawBtn" onclick="drawNumbers()">摇 号</button>
++        <div id="result" aria-live="polite"></div>
++    </div>
++
++    <script>
++        let drawSeq = 0;
++        async function drawNumbers() {
++            const btn = document.getElementById('drawBtn');
++            const result = document.getElementById('result');
++            const seq = ++drawSeq;
++            btn.disabled = true;
++            btn.setAttribute('aria-busy', 'true');
++            btn.textContent = '摇号中...';
++            result.innerHTML = '';
++            try {
++                const response = await fetch('/api/lottery/draw');
++                if (!response.ok) {
++                    throw new Error('HTTP ' + response.status);
++                }
++                const numbers = await response.json();
++                numbers.forEach(function (n, i) {
++                    setTimeout(function () {
++                        if (seq !== drawSeq) return;
++                        const ball = document.createElement('div');
++                        ball.className = 'ball';
++                        ball.textContent = n;
++                        result.appendChild(ball);
++                    }, i * 150);
++                });
++            } catch (e) {
++                result.innerHTML = '<p style="color:#dc2626">摇号失败，请重试</p>';
++            } finally {
++                btn.disabled = false;
++                btn.removeAttribute('aria-busy');
++                btn.textContent = '摇 号';
++            }
++        }
++    </script>
++</body>
++</html>
+\ No newline at end of file
